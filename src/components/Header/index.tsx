@@ -1,19 +1,11 @@
 import BannerImg from '@/assets/images/banner.jpg';
 import SearchBarHeader from '@/components/Header/SearchBarHeader';
+import PopularChips from '@/components/Header/PopularChips';
 import Image from 'next/image';
-import Link from 'next/link';
 
 interface HeaderProps {
   lang: string;
 }
-
-const POPULAR_SEARCHES = [
-  'Azərbaycan mətbəxi',
-  'Avropa',
-  'Pizza',
-  'Kafe',
-  'Dəniz məhsulları',
-];
 
 const Header = ({ lang }: HeaderProps) => {
   return (
@@ -50,18 +42,8 @@ const Header = ({ lang }: HeaderProps) => {
                 <SearchBarHeader />
               </div>
 
-              {/* Popular searches */}
-              <div className="mt-5 flex flex-wrap items-center gap-2.5">
-                <span className="text-sm text-white/75">Populyar:</span>
-                {POPULAR_SEARCHES.map((term) => (
-                  <Link
-                    key={term}
-                    href={`/${lang}/places?search=${encodeURIComponent(term)}`}
-                    className="rounded-full border border-white/25 bg-white/10 px-3.5 py-1.5 text-sm text-white backdrop-blur-sm transition-colors hover:bg-white/20">
-                    {term}
-                  </Link>
-                ))}
-              </div>
+              {/* Popular cuisine categories */}
+              <PopularChips lang={lang} />
             </div>
 
             {/* Right: floating food image */}
