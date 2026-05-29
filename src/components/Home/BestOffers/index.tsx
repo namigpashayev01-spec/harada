@@ -29,15 +29,23 @@ const BestOffers = ({ lang }: BestOffersProps) => {
       <div className="wrapper">
         {/* Designed lime background panel */}
         <div
-          className="relative overflow-hidden rounded-[28px] px-5 py-8 md:px-10 md:py-12"
+          className="relative overflow-hidden rounded-[28px] px-5 py-8 ring-1 ring-inset ring-white/40 md:px-10 md:py-12"
           style={{
             background:
-              'linear-gradient(135deg, #9fe870 0%, #b8f08f 55%, #8fdc5c 100%)',
+              'radial-gradient(125% 125% at 100% 0%, #c6f3a1 0%, #9fe870 48%, #84d653 100%)',
           }}>
-          {/* Decorative shapes */}
-          <div className="pointer-events-none absolute -right-20 -top-24 h-64 w-64 rounded-full bg-white/30" />
-          <div className="pointer-events-none absolute right-10 top-28 h-24 w-24 rounded-full bg-white/20" />
-          <div className="pointer-events-none absolute -bottom-24 -left-16 h-64 w-64 rounded-full bg-[#006653]/15" />
+          {/* Soft decorative blobs */}
+          <div className="pointer-events-none absolute -right-24 -top-28 h-72 w-72 rounded-full bg-white/45 blur-3xl" />
+          <div className="pointer-events-none absolute right-1/3 top-1/2 h-44 w-44 rounded-full bg-white/25 blur-3xl" />
+          <div className="pointer-events-none absolute -bottom-28 -left-20 h-72 w-72 rounded-full bg-[#006653]/20 blur-3xl" />
+          {/* Subtle dotted texture */}
+          <div
+            className="pointer-events-none absolute inset-0 opacity-[0.06]"
+            style={{
+              backgroundImage: 'radial-gradient(#14532d 1px, transparent 1px)',
+              backgroundSize: '18px 18px',
+            }}
+          />
 
           <div className="relative">
             <div className="mb-7 flex flex-col gap-1.5">
@@ -54,11 +62,16 @@ const BestOffers = ({ lang }: BestOffersProps) => {
 
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
               {/* Promo banner cell */}
-              <div className="relative col-span-2 flex flex-col justify-between overflow-hidden rounded-xl bg-discount p-6 text-white lg:col-span-1">
-                <div className="pointer-events-none absolute -right-8 -top-8 h-32 w-32 rounded-full bg-white/10" />
-                <div className="pointer-events-none absolute -bottom-10 -left-6 h-28 w-28 rounded-full bg-white/10" />
+              <div
+                className="relative col-span-2 flex flex-col justify-between overflow-hidden rounded-2xl p-6 text-white lg:col-span-1"
+                style={{
+                  background:
+                    'linear-gradient(150deg, #006653 0%, #00513f 100%)',
+                }}>
+                <div className="pointer-events-none absolute -right-10 -top-12 h-36 w-36 rounded-full bg-[#9fe870]/20 blur-2xl" />
+                <div className="pointer-events-none absolute -bottom-12 -left-8 h-32 w-32 rounded-full bg-white/10 blur-2xl" />
                 <div className="relative">
-                  <span className="inline-flex items-center rounded-full bg-white/20 px-3 py-1 text-xs font-semibold uppercase tracking-wide">
+                  <span className="inline-flex items-center rounded-full bg-[#9fe870] px-3 py-1 text-xs font-bold uppercase tracking-wide text-[#14532d]">
                     Endirim
                   </span>
                   <h3 className="mt-4 text-2xl font-bold leading-tight md:text-3xl">
@@ -70,7 +83,7 @@ const BestOffers = ({ lang }: BestOffersProps) => {
                 </div>
                 <Link
                   href={`/${lang}/places`}
-                  className="relative mt-6 inline-flex w-fit items-center gap-1.5 rounded-lg bg-white px-4 py-2.5 text-sm font-semibold text-discount transition-colors hover:bg-white/90">
+                  className="relative mt-6 inline-flex w-fit items-center gap-1.5 rounded-lg bg-[#9fe870] px-4 py-2.5 text-sm font-semibold text-[#14532d] transition-colors hover:bg-[#8fdc5c]">
                   Təkliflərə bax <ArrowRight className="h-4 w-4" />
                 </Link>
               </div>
