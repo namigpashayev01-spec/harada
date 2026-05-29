@@ -7,6 +7,7 @@ import { Map as MapIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import SearchBarHeader from '@/components/Header/SearchBarHeader';
 import FilterBar from '@/components/Places/FilterBar';
+import CategoryScroller from '@/components/Places/CategoryScroller';
 import RestaurantCard from '@/components/Places/RestaurantCard';
 import GoogleMap, { MapLocation } from '@/components/Places/GoogleMap';
 import PlaceBanner from '@/assets/images/places-banner.jpg';
@@ -47,6 +48,7 @@ function PlacesContent() {
   const [activeCategoryId, setActiveCategoryId] = useState<number | null>(
     categoryIdParam ? Number(categoryIdParam) : null,
   );
+  const [filterResetKey, setFilterResetKey] = useState(0);
 
   const userLocationRef = useRef<{ lat: number; lng: number } | null>(null);
   const propFiltersRef = useRef<{ properties: number[]; subproperties: number[]; is_special_offer: boolean }>({ properties: [], subproperties: [], is_special_offer: false });
@@ -159,6 +161,21 @@ function PlacesContent() {
     }
   };
 
+  const resetAllFilters = () => {
+    const emptyFilters = { properties: [], subproperties: [], is_special_offer: false };
+    propFiltersRef.current = emptyFilters;
+    setActiveCategoryId(null);
+    setFilterResetKey((k) => k + 1); // remount FilterBar → clears its internal state
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete('category_id');
+    router.replace(`/${lang}/places?${params.toString()}`);
+    if (bbox) {
+      fetchRestaurants(null, search, bbox, emptyFilters, null);
+    } else if (userLocationRef.current) {
+      fetchRestaurants(userLocationRef.current, search, null, emptyFilters, null);
+    }
+  };
+
   const mapLocations: MapLocation[] = restaurants.map((r) => ({
     id: String(r.id),
     title: r.title,
@@ -201,33 +218,12 @@ function PlacesContent() {
       {/* Category filter */}
       {categories.length > 0 && (
         <div className="bg-white border-b border-gray-100">
-          <div className="max-w-7xl mx-auto py-3 px-4 overflow-x-auto">
-            <div className="flex items-center gap-2 min-w-max">
-              <button
-                onClick={() => handleCategorySelect(null)}
-                className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors border ${
-                  activeCategoryId === null
-                    ? 'bg-[#006653] text-white border-[#006653]'
-                    : 'border-gray-200 text-gray-700 hover:bg-gray-50'
-                }`}>
-                All
-              </button>
-              {categories.map((cat) => (
-                <button
-                  key={cat.id}
-                  onClick={() => handleCategorySelect(cat.id)}
-                  className={`flex items-center gap-1.5 rounded-full px-4 py-1.5 text-sm font-medium transition-colors border ${
-                    activeCategoryId === cat.id
-                      ? 'bg-[#006653] text-white border-[#006653]'
-                      : 'border-gray-200 text-gray-700 hover:bg-gray-50'
-                  }`}>
-                  {cat.icon && (
-                    <Image src={cat.icon} alt={cat.title || 'Category'} width={16} height={16} className="w-4 h-4 object-contain" />
-                  )}
-                  {cat.title}
-                </button>
-              ))}
-            </div>
+          <div className="max-w-7xl mx-auto py-3 px-4">
+            <CategoryScroller
+              categories={categories}
+              activeCategoryId={activeCategoryId}
+              onSelect={handleCategorySelect}
+            />
           </div>
         </div>
       )}
@@ -235,7 +231,14 @@ function PlacesContent() {
       {/* Property filter bar */}
       <div className="bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto">
-          <FilterBar onFilterChange={handleFilterChange} />
+          <FilterBar
+            key={filterResetKey}
+            onFilterChange={handleFilterChange}
+            activeCategoryLabel={
+              categories.find((c) => c.id === activeCategoryId)?.title ?? null
+            }
+            onClearCategory={() => handleCategorySelect(null)}
+          />
         </div>
       </div>
 
@@ -247,22 +250,22 @@ function PlacesContent() {
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
               <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
                 {search
-                  ? `Results for "${search}"`
+                  ? `"${search}" üçün nəticələr`
                   : bbox
-                  ? 'Restaurants in selected area'
-                  : 'Nearby Restaurants'}
+                  ? 'Seçilmiş ərazidəki restoranlar'
+                  : 'Yaxınlıqdakı restoranlar'}
               </h1>
               {!loading && (
                 <span className="text-sm text-gray-500">
-                  {restaurants.length} restaurants
+                  {restaurants.length} restoran
                 </span>
               )}
             </div>
 
             {locationError && (
               <p className="text-sm text-amber-600 bg-amber-50 border border-amber-200 px-3 py-2 rounded-lg">
-                Could not detect your location. Showing restaurants in the
-                default area.
+                Məkanınız təyin edilə bilmədi. Standart ərazidəki restoranlar
+                göstərilir.
               </p>
             )}
 
@@ -270,7 +273,7 @@ function PlacesContent() {
               onClick={() => setShowMobileMap(!showMobileMap)}
               className="lg:hidden w-full bg-[#006653] hover:bg-[#00543f] text-white">
               <MapIcon className="h-4 w-4 mr-2" />
-              {showMobileMap ? 'Show List' : 'Show Map'}
+              {showMobileMap ? 'Siyahını göstər' : 'Xəritədə göstər'}
             </Button>
 
             <div
@@ -283,9 +286,16 @@ function PlacesContent() {
                   />
                 ))
               ) : restaurants.length === 0 ? (
-                <p className="text-gray-500 text-center py-12">
-                  No restaurants found. Try adjusting your search or filters.
-                </p>
+                <div className="flex flex-col items-center gap-3 py-12 text-center">
+                  <p className="text-gray-500">
+                    Restoran tapılmadı. Filtrləri dəyişməyi sınayın.
+                  </p>
+                  <button
+                    onClick={resetAllFilters}
+                    className="inline-flex items-center gap-1.5 rounded-full bg-[#9fe870] px-5 py-2.5 text-sm font-semibold text-[#14532d] transition-colors hover:bg-[#8fdc5c]">
+                    Filtrləri sıfırla
+                  </button>
+                </div>
               ) : (
                 restaurants.map((restaurant) => {
                   const rSlug =
@@ -335,7 +345,7 @@ function PlacesContent() {
                   onClick={() => setShowMobileMap(false)}
                   variant="outline"
                   className="w-full">
-                  Close Map
+                  Xəritəni bağla
                 </Button>
               </div>
               <div className="flex-1">

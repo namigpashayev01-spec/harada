@@ -7,17 +7,15 @@ import type { Swiper as SwiperType } from 'swiper';
 import { useParams } from 'next/navigation';
 import 'swiper/css';
 import 'swiper/css/pagination';
-import { useBlogs } from '@/hooks/useBlogs';
 import BlogCard from '@/components/shared/BlogCard';
+import { getStaticBlogs } from '@/data/staticBlogs';
 
 const BlogList = () => {
   const swiperRef = useRef<SwiperType | null>(null);
   const params = useParams();
   const lang = (params?.lang as string) || 'az';
 
-  const { data } = useBlogs();
-
-  const blogData = data?.data ?? [];
+  const blogData = getStaticBlogs(lang).slice(0, 6);
 
   return (
     <section className="section">

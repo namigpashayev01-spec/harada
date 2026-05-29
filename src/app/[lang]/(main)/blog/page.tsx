@@ -7,13 +7,19 @@ interface BlogPageProps {
   params: Promise<{ lang: string }>;
 }
 
+const BREADCRUMB: Record<string, { home: string; blog: string }> = {
+  az: { home: 'Ana səhifə', blog: 'Bloq' },
+  en: { home: 'Home', blog: 'Blog' },
+  ru: { home: 'Главная', blog: 'Блог' },
+};
+
 const BlogPage = async ({ params }: BlogPageProps) => {
   const { lang } = await params;
+  const t = BREADCRUMB[lang] ?? BREADCRUMB.az;
 
   const blogBreadCrumbItems = [
-    { label: 'Restaurants', href: '/restaurants' },
-    { label: 'Barcelona', href: '/restaurants/barcelona' },
-    { label: 'The 10 Best Restaurants in Barcelona' },
+    { label: t.home, href: `/${lang}` },
+    { label: t.blog },
   ];
 
   return (

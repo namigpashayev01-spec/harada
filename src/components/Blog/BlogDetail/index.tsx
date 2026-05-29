@@ -1,36 +1,30 @@
-'use client';
-
 import React from 'react';
 import Image from 'next/image';
 import { Eye } from 'lucide-react';
-import { useBlog } from '@/hooks/useBlog';
 import SimilarBlogs from '../SimilarBlogs';
+import { getStaticBlog } from '@/data/staticBlogs';
 
 interface BlogDetailProps {
   slug: string;
   lang: string;
 }
 
+const NOT_FOUND: Record<string, string> = {
+  az: 'Bloq tapılmadı.',
+  en: 'Blog post not found.',
+  ru: 'Статья не найдена.',
+};
+
 const BlogDetail = ({ slug, lang }: BlogDetailProps) => {
-  const { data, isLoading, isError } = useBlog(slug);
+  const blog = getStaticBlog(slug, lang);
 
-  if (isLoading) {
+  if (!blog) {
     return (
       <div className="wrapper py-[38px] text-center">
-        <p className="text-gray-500">Loading...</p>
+        <p className="text-gray-500">{NOT_FOUND[lang] ?? NOT_FOUND.az}</p>
       </div>
     );
   }
-
-  if (isError || !data) {
-    return (
-      <div className="wrapper py-[38px] text-center">
-        <p className="text-gray-500">Blog post not found.</p>
-      </div>
-    );
-  }
-
-  const blog = data.data;
 
   return (
     <>

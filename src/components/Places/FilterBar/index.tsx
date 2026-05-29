@@ -31,9 +31,16 @@ interface FilterSelection {
 
 interface FilterBarProps {
   onFilterChange: (filters: FilterSelection) => void;
+  /** Currently selected category (shown as a removable pill in the summary). */
+  activeCategoryLabel?: string | null;
+  onClearCategory?: () => void;
 }
 
-export default function FilterBar({ onFilterChange }: FilterBarProps) {
+export default function FilterBar({
+  onFilterChange,
+  activeCategoryLabel,
+  onClearCategory,
+}: FilterBarProps) {
   const [properties, setProperties] = useState<Property[]>([]);
   const [selectedSubproperties, setSelectedSubproperties] = useState<
     Record<number, number>
@@ -87,12 +94,47 @@ export default function FilterBar({ onFilterChange }: FilterBarProps) {
     setActiveToggles(new Set());
     setSpecialOffer(false);
     emit({}, new Set(), false);
+    onClearCategory?.();
   };
 
   const activeCount =
     Object.values(selectedSubproperties).filter(Boolean).length +
     activeToggles.size +
     (specialOffer ? 1 : 0);
+
+  /* Human-readable list of currently applied filters, each removable. */
+  type ActivePill = { key: string; label: string; remove: () => void };
+  const activePills: ActivePill[] = [];
+  if (activeCategoryLabel && onClearCategory)
+    activePills.push({
+      key: 'category',
+      label: activeCategoryLabel,
+      remove: onClearCategory,
+    });
+  if (specialOffer)
+    activePills.push({
+      key: 'offer',
+      label: 'Endirimli',
+      remove: toggleSpecialOffer,
+    });
+  properties.forEach((property) => {
+    const subId = selectedSubproperties[property.id];
+    if (subId) {
+      const sub = property.sub_properties.find((s) => s.id === subId);
+      if (sub)
+        activePills.push({
+          key: `sub-${sub.id}`,
+          label: sub.title,
+          remove: () => setSubproperty(property.id, null),
+        });
+    }
+    if (activeToggles.has(property.id))
+      activePills.push({
+        key: `prop-${property.id}`,
+        label: property.title,
+        remove: () => toggleProperty(property.id),
+      });
+  });
 
   if (!properties.length) return null;
 
@@ -271,6 +313,29 @@ export default function FilterBar({ onFilterChange }: FilterBarProps) {
           </button>
         )}
       </div>
+
+      {/* ---- Active filter summary (both mobile & desktop) ---- */}
+      {activePills.length > 0 && (
+        <div className="mt-3 flex flex-wrap items-center gap-2 px-4 md:px-0">
+          <span className="text-xs font-medium text-gray-500">
+            Seçilmiş filtrlər:
+          </span>
+          {activePills.map((pill) => (
+            <button
+              key={pill.key}
+              onClick={pill.remove}
+              className="inline-flex items-center gap-1.5 rounded-full bg-[#eefae1] px-3 py-1 text-sm font-medium text-[#14532d] transition-colors hover:bg-[#dff3c9]">
+              {pill.label}
+              <X className="h-3.5 w-3.5" />
+            </button>
+          ))}
+          <button
+            onClick={clearAll}
+            className="text-xs font-semibold text-[#006653] underline-offset-2 hover:underline">
+            Hamısını sil
+          </button>
+        </div>
+      )}
     </div>
   );
 }

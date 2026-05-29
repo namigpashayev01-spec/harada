@@ -1,10 +1,14 @@
-import AboutContent from "@/components/About/AboutContent";
+import AboutContent from '@/components/About/AboutContent';
 
+interface AboutPageProps {
+  params: Promise<{ lang: string }>;
+}
 
-export default function AboutPage() {
+export default async function AboutPage({ params }: AboutPageProps) {
+  const { lang } = await params;
   return (
     <div>
-      <AboutContent />
+      <AboutContent lang={lang} />
     </div>
-  )
+  );
 }

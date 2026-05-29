@@ -66,7 +66,7 @@ export default async function RootLayout({
     paramLang && VALID_LANGUAGES.includes(paramLang) ? paramLang : 'en';
 
   return (
-    <html lang={lang}>
+    <html lang={lang} suppressHydrationWarning>
       <body suppressHydrationWarning className={`${poppins.variable} ${raleway.variable} ${inter.variable}`}>
         {children}
       </body>
