@@ -1,8 +1,9 @@
 'use client';
 
+import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { MapPin, Star } from 'lucide-react';
+import { MapPin, Star, UtensilsCrossed } from 'lucide-react';
 import FavoriteButton from '@/components/common/FavoriteButton';
 import { ISlug } from '@/types';
 import { Restaurant } from '@/types/restaurant';
@@ -20,7 +21,10 @@ const resolveSlug = (slug: ISlug | undefined, lang: string, id: number): string 
 };
 
 const RestaurantCard = ({ place, lang, topBadge }: RestaurantCardProps) => {
+  const [imgError, setImgError] = useState(false);
   const href = `/${lang}/places/${resolveSlug(place.slug, lang, place.id)}`;
+  // Show a branded cover when there is no image or it fails to load.
+  const showCover = !place.image || imgError;
 
   // Cuisine: light list endpoints expose sub_properties; detail uses categories.
   const cuisine =
@@ -39,15 +43,28 @@ const RestaurantCard = ({ place, lang, topBadge }: RestaurantCardProps) => {
     <Link
       href={href}
       className="card-hover group flex h-full flex-col overflow-hidden rounded-xl bg-white">
-      {/* Photo 3:2 */}
-      <div className="relative aspect-[3/2] w-full overflow-hidden">
-        <Image
-          src={place.image || '/placeholder.svg'}
-          alt={place.title || 'Restaurant'}
-          fill
-          sizes="(max-width: 640px) 90vw, (max-width: 1024px) 45vw, 23vw"
-          className="object-cover transition-transform duration-500 group-hover:scale-105"
-        />
+      {/* Photo 4:3 (slightly taller / bigger) */}
+      <div className="relative aspect-[4/3] w-full overflow-hidden">
+        {showCover ? (
+          // Branded fallback cover in our palette
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-[#013a30] via-[#006653] to-[#0a7d54] transition-transform duration-500 group-hover:scale-105">
+            <div className="pointer-events-none absolute -right-8 -top-8 h-28 w-28 rounded-full bg-white/10" />
+            <div className="pointer-events-none absolute -bottom-10 -left-6 h-28 w-28 rounded-full bg-black/10" />
+            <UtensilsCrossed className="relative z-10 h-9 w-9 text-[#9fe870]" />
+            <span className="relative z-10 mt-2 line-clamp-2 px-5 text-center text-sm font-semibold text-white">
+              {place.title || 'Restoran'}
+            </span>
+          </div>
+        ) : (
+          <Image
+            src={place.image as string}
+            alt={place.title || 'Restaurant'}
+            fill
+            sizes="(max-width: 640px) 90vw, (max-width: 1024px) 45vw, 23vw"
+            onError={() => setImgError(true)}
+            className="object-cover transition-transform duration-500 group-hover:scale-105"
+          />
+        )}
 
         {badge && (
           <span className="absolute left-3 top-3 z-10 rounded-full bg-brand px-2.5 py-1 text-[11px] font-semibold text-brand-ink shadow-sm">

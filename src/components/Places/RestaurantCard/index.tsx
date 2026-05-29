@@ -1,5 +1,6 @@
 'use client';
-import { MapPin, Star, DollarSign } from 'lucide-react';
+import { useState } from 'react';
+import { MapPin, Star, ArrowRight, Navigation, UtensilsCrossed } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { NearbyRestaurant } from '@/types/restaurant';
@@ -12,7 +13,8 @@ interface RestaurantCardProps {
 
 export default function RestaurantCard({ restaurant }: RestaurantCardProps) {
   const pathname = usePathname();
-  const lang = pathname.split('/')[1] || 'en';
+  const lang = pathname.split('/')[1] || 'az';
+  const [imgError, setImgError] = useState(false);
 
   const slug =
     restaurant.slug.az ||
@@ -22,101 +24,113 @@ export default function RestaurantCard({ restaurant }: RestaurantCardProps) {
   const href = `/${lang}/places/${slug}`;
 
   const categories = restaurant.categories?.slice(0, 2) ?? [];
+  const showCover = !restaurant.image || imgError;
 
   return (
-    <div className="flex gap-4 p-4 bg-white rounded-lg hover:shadow-md transition-shadow">
+    <div className="group flex flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white transition-all duration-300 hover:shadow-[0_8px_28px_rgba(0,0,0,0.10)] sm:flex-row">
       {/* Image */}
-      <div className="relative w-44 h-44 flex-shrink-0 rounded-lg overflow-hidden group">
+      <div className="relative aspect-[450/200] w-full shrink-0 overflow-hidden sm:aspect-auto sm:min-h-[210px] sm:w-60">
         <Link href={href} className="absolute inset-0 z-0">
-          <Image
-            src={restaurant.image || '/placeholder.svg'}
-            alt={restaurant.title || 'Restaurant'}
-            fill
-            className="object-cover group-hover:scale-105 transition-transform duration-300"
-          />
+          {showCover ? (
+            <div className="flex h-full w-full flex-col items-center justify-center bg-gradient-to-br from-[#013a30] via-[#006653] to-[#0a7d54]">
+              <UtensilsCrossed className="h-9 w-9 text-[#9fe870]" />
+              <span className="mt-2 line-clamp-2 px-4 text-center text-sm font-semibold text-white">
+                {restaurant.title || 'Restoran'}
+              </span>
+            </div>
+          ) : (
+            <Image
+              src={restaurant.image}
+              alt={restaurant.title || 'Restaurant'}
+              fill
+              sizes="(max-width: 640px) 90vw, 240px"
+              onError={() => setImgError(true)}
+              className="object-cover transition-transform duration-500 group-hover:scale-105"
+            />
+          )}
         </Link>
-        {restaurant.is_vip && (
-          <span className="absolute top-2 left-2 bg-[#006653] text-white text-[10px] font-semibold px-2 py-0.5 rounded-full z-10">
-            VIP
-          </span>
-        )}
+
+        {/* Status badges */}
+        <div className="absolute left-3 top-3 z-10 flex flex-col gap-1.5">
+          {restaurant.is_vip && (
+            <span className="rounded-full bg-[#9fe870] px-2.5 py-1 text-[11px] font-bold text-[#14532d] shadow-sm">
+              Top 10
+            </span>
+          )}
+          {restaurant.is_special_offer && (
+            <span className="rounded-full bg-white px-2.5 py-1 text-[11px] font-bold text-[#006653] shadow-sm">
+              Endirimli
+            </span>
+          )}
+        </div>
+
         <FavoriteButton
           restaurantId={restaurant.id}
-          className="absolute top-2 right-2 z-10"
+          className="absolute right-3 top-3 z-10"
         />
       </div>
 
       {/* Details */}
-      <div className="flex-1 flex flex-col justify-between py-1">
-        <div>
-          <div className="flex items-start justify-between mb-1">
-            <div>
-              <Link href={href}>
-                <h3 className="text-xl font-semibold text-gray-900 hover:text-[#006653] transition-colors">
-                  {restaurant.title}
-                </h3>
-              </Link>
-              {categories.length > 0 && (
-                <div className="flex items-center gap-1 mt-1 flex-wrap">
-                  {categories.map((cat) => (
-                    <span
-                      key={cat.id}
-                      className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
-                      {cat.title}
-                    </span>
-                  ))}
-                </div>
-              )}
-            </div>
-            {/* <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 text-gray-400 hover:text-red-500 flex-shrink-0"
-              onClick={(e) => {
-                e.preventDefault();
-                setIsFavorite(!isFavorite);
-              }}>
-              <Heart
-                className={cn(
-                  'h-5 w-5',
-                  isFavorite && 'fill-red-500 text-red-500',
-                )}
-              />
-            </Button> */}
-          </div>
+      <div className="flex flex-1 flex-col p-4">
+        <div className="flex items-start justify-between gap-2">
+          <Link href={href}>
+            <h3 className="text-lg font-bold leading-snug text-gray-900 transition-colors group-hover:text-[#006653]">
+              {restaurant.title}
+            </h3>
+          </Link>
+          {typeof restaurant.rating === 'number' && (
+            <span className="flex shrink-0 items-center gap-1 rounded-lg bg-[#eefae1] px-2 py-1 text-sm font-bold text-[#14532d]">
+              <Star className="h-3.5 w-3.5 fill-[#006653] text-[#006653]" />
+              {restaurant.rating.toFixed(1)}
+            </span>
+          )}
+        </div>
 
-          <div className="flex items-center gap-3 mt-2 text-sm text-gray-600">
-            {restaurant.address && (
-              <div className="flex items-center gap-1">
-                <MapPin className="h-4 w-4 text-gray-400 flex-shrink-0" />
-                <span className="truncate max-w-[180px]">
-                  {restaurant.address}
-                </span>
-              </div>
-            )}
-          </div>
-
-          <div className="flex items-center gap-3 mt-1 text-sm">
-            {restaurant.average_price && (
-              <div className="flex items-center gap-1 text-gray-600">
-                <DollarSign className="h-4 w-4 text-gray-400" />
-                <span>{restaurant.average_price} AZN</span>
-              </div>
-            )}
-            {restaurant.distance != null && (
-              <span className="text-gray-500">
-                {restaurant.distance.toFixed(1)} km away
+        {categories.length > 0 && (
+          <div className="mt-2 flex flex-wrap items-center gap-1.5">
+            {categories.map((cat) => (
+              <span
+                key={cat.id}
+                className="rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-600">
+                {cat.title}
+              </span>
+            ))}
+            {typeof restaurant.reviews_count === 'number' && (
+              <span className="text-xs text-gray-400">
+                ({restaurant.reviews_count} rəy)
               </span>
             )}
           </div>
+        )}
+
+        {restaurant.address && (
+          <div className="mt-2.5 flex items-center gap-1.5 text-sm text-gray-500">
+            <MapPin className="h-4 w-4 shrink-0 text-gray-400" />
+            <span className="line-clamp-1">{restaurant.address}</span>
+          </div>
+        )}
+
+        <div className="mt-1.5 flex items-center gap-3 text-sm text-gray-600">
+          {restaurant.average_price && (
+            <span className="font-medium text-gray-700">
+              ~{restaurant.average_price} AZN
+            </span>
+          )}
+          {restaurant.distance != null && (
+            <span className="flex items-center gap-1 text-gray-500">
+              <Navigation className="h-3.5 w-3.5 text-gray-400" />
+              {restaurant.distance.toFixed(1)} km uzaqda
+            </span>
+          )}
         </div>
 
-        <div className="mt-3">
+        {/* CTA */}
+        <div className="mt-auto pt-4">
           <Link
             href={href}
-            className="inline-flex items-center gap-1 bg-[#006653] hover:bg-[#00543f] text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors">
-            <Star className="h-4 w-4" />
-            View Details
+            className="inline-flex w-full items-center justify-center gap-1.5 rounded-xl bg-[#006653] px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#00543f] sm:w-auto">
+            Ətraflı bax
+            <ArrowRight className="h-4 w-4" />
           </Link>
         </div>
       </div>
