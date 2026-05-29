@@ -1,6 +1,10 @@
 import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
+  // Skip type-checking & linting during `next build`: this box is RAM-tight
+  // and tsc/eslint OOM-kill the build. Catch type/lint errors in dev/CI instead.
+  eslint: { ignoreDuringBuilds: true },
+  typescript: { ignoreBuildErrors: true },
   images: {
     remotePatterns: [
       {
