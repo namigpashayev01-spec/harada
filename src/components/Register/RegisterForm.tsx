@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
+import { User, Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import axios from 'axios';
 import { useAuth } from '@/context/AuthContext';
 
@@ -21,6 +22,8 @@ interface Dict {
   signin: string;
   requiredErr: string;
   genericErr: string;
+  showPassword: string;
+  hidePassword: string;
 }
 
 const DICT: Record<string, Dict> = {
@@ -40,6 +43,8 @@ const DICT: Record<string, Dict> = {
     signin: 'Daxil ol',
     requiredErr: 'Ad, e-poçt və şifrə mütləqdir.',
     genericErr: 'Hesab yaradıla bilmədi. Yenidən cəhd edin.',
+    showPassword: 'Şifrəni göstər',
+    hidePassword: 'Şifrəni gizlət',
   },
   en: {
     title: 'Register',
@@ -57,6 +62,8 @@ const DICT: Record<string, Dict> = {
     signin: 'Sign in',
     requiredErr: 'Name, email and password are required.',
     genericErr: 'Could not create your account. Please try again.',
+    showPassword: 'Show password',
+    hidePassword: 'Hide password',
   },
   ru: {
     title: 'Регистрация',
@@ -74,6 +81,8 @@ const DICT: Record<string, Dict> = {
     signin: 'Войти',
     requiredErr: 'Имя, эл. почта и пароль обязательны.',
     genericErr: 'Не удалось создать аккаунт. Попробуйте снова.',
+    showPassword: 'Показать пароль',
+    hidePassword: 'Скрыть пароль',
   },
 };
 
@@ -88,6 +97,7 @@ export default function RegisterForm() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -125,8 +135,12 @@ export default function RegisterForm() {
     }
   };
 
-  const inputClass =
-    'w-full px-4 py-3 border border-gray-200 rounded-lg text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#006653]/40 focus:border-[#006653] transition';
+  const baseInput =
+    'w-full pl-11 py-3 border border-gray-200 rounded-lg text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#006653]/40 focus:border-[#006653] transition';
+  const inputClass = `${baseInput} pr-4`;
+  const pwInputClass = `${baseInput} pr-11`;
+  const iconClass =
+    'pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400';
 
   return (
     <div className="w-full max-w-md mx-auto">
@@ -138,42 +152,62 @@ export default function RegisterForm() {
           <label className="block text-gray-700 text-sm font-medium mb-2">
             {t.name}
           </label>
-          <input
-            type="text"
-            placeholder={t.namePh}
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            autoComplete="name"
-            className={inputClass}
-          />
+          <div className="relative">
+            <User className={iconClass} />
+            <input
+              type="text"
+              placeholder={t.namePh}
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              autoComplete="name"
+              className={inputClass}
+            />
+          </div>
         </div>
 
         <div>
           <label className="block text-gray-700 text-sm font-medium mb-2">
             {t.email}
           </label>
-          <input
-            type="email"
-            placeholder={t.emailPh}
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            autoComplete="email"
-            className={inputClass}
-          />
+          <div className="relative">
+            <Mail className={iconClass} />
+            <input
+              type="email"
+              placeholder={t.emailPh}
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              autoComplete="email"
+              className={inputClass}
+            />
+          </div>
         </div>
 
         <div>
           <label className="block text-gray-700 text-sm font-medium mb-2">
             {t.password}
           </label>
-          <input
-            type="password"
-            placeholder={t.passwordPh}
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            autoComplete="new-password"
-            className={inputClass}
-          />
+          <div className="relative">
+            <Lock className={iconClass} />
+            <input
+              type={showPassword ? 'text' : 'password'}
+              placeholder={t.passwordPh}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              autoComplete="new-password"
+              className={pwInputClass}
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword((s) => !s)}
+              aria-label={showPassword ? t.hidePassword : t.showPassword}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[#006653] transition-colors">
+              {showPassword ? (
+                <EyeOff className="h-5 w-5" />
+              ) : (
+                <Eye className="h-5 w-5" />
+              )}
+            </button>
+          </div>
         </div>
 
         <div className="flex items-center gap-3 py-1">
