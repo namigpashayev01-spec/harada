@@ -34,25 +34,45 @@ interface FilterBarProps {
   /** Currently selected category (shown as a removable pill in the summary). */
   activeCategoryLabel?: string | null;
   onClearCategory?: () => void;
+  /** Pre-selected filters (e.g. carried in from the hero filter via URL). */
+  initial?: FilterSelection;
 }
 
 export default function FilterBar({
   onFilterChange,
   activeCategoryLabel,
   onClearCategory,
+  initial,
 }: FilterBarProps) {
   const [properties, setProperties] = useState<Property[]>([]);
   const [selectedSubproperties, setSelectedSubproperties] = useState<
     Record<number, number>
   >({});
-  const [activeToggles, setActiveToggles] = useState<Set<number>>(new Set());
-  const [specialOffer, setSpecialOffer] = useState(false);
+  const [activeToggles, setActiveToggles] = useState<Set<number>>(
+    new Set(initial?.properties ?? []),
+  );
+  const [specialOffer, setSpecialOffer] = useState(
+    initial?.is_special_offer ?? false,
+  );
 
   useEffect(() => {
     propertyService
       .getProperties()
-      .then((res) => setProperties(res.data))
+      .then((res) => {
+        setProperties(res.data);
+        // Map any pre-selected subproperty ids back to their property group.
+        if (initial?.subproperties.length) {
+          const rec: Record<number, number> = {};
+          res.data.forEach((p) =>
+            p.sub_properties.forEach((s) => {
+              if (initial.subproperties.includes(s.id)) rec[p.id] = s.id;
+            }),
+          );
+          if (Object.keys(rec).length) setSelectedSubproperties(rec);
+        }
+      })
       .catch(console.error);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const emit = (

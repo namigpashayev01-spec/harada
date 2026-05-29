@@ -37,6 +37,17 @@ function PlacesContent() {
         }
       : null;
 
+  // Property filters carried in from the hero filter (or this page).
+  const urlFilters = {
+    properties: searchParams.getAll('properties').map(Number).filter(Boolean),
+    subproperties: searchParams
+      .getAll('subproperties')
+      .map(Number)
+      .filter(Boolean),
+    is_special_offer: searchParams.get('is_special_offer') === '1',
+  };
+  const urlFiltersKey = JSON.stringify(urlFilters);
+
   const [restaurants, setRestaurants] = useState<NearbyRestaurant[]>([]);
   const [loading, setLoading] = useState(false);
   const [locationError, setLocationError] = useState(false);
@@ -51,7 +62,8 @@ function PlacesContent() {
   const [filterResetKey, setFilterResetKey] = useState(0);
 
   const userLocationRef = useRef<{ lat: number; lng: number } | null>(null);
-  const propFiltersRef = useRef<{ properties: number[]; subproperties: number[]; is_special_offer: boolean }>({ properties: [], subproperties: [], is_special_offer: false });
+  const propFiltersRef = useRef<{ properties: number[]; subproperties: number[]; is_special_offer: boolean }>(urlFilters);
+  const lastUrlFiltersKey = useRef(urlFiltersKey);
 
   useEffect(() => {
     categoriesService.getCategories().then((res) => setCategories(res.data)).catch(() => {});
@@ -103,6 +115,12 @@ function PlacesContent() {
   );
 
   useEffect(() => {
+    // When the URL-borne filters change (e.g. arriving from the hero filter),
+    // adopt them so the fetch below uses them.
+    if (lastUrlFiltersKey.current !== urlFiltersKey) {
+      propFiltersRef.current = urlFilters;
+      lastUrlFiltersKey.current = urlFiltersKey;
+    }
     console.log('[SearchArea] 🌐 Places page effect — URL params:', {
       search: search || '(none)',
       bbox,
@@ -142,7 +160,7 @@ function PlacesContent() {
       { enableHighAccuracy: true, timeout: 8000 },
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [search, neLatParam, neLngParam, swLatParam, swLngParam, fetchRestaurants, activeCategoryId]);
+  }, [search, neLatParam, neLngParam, swLatParam, swLngParam, fetchRestaurants, activeCategoryId, urlFiltersKey]);
 
   const handleCategorySelect = (id: number | null) => {
     setActiveCategoryId(id);
@@ -168,6 +186,14 @@ function PlacesContent() {
     setFilterResetKey((k) => k + 1); // remount FilterBar → clears its internal state
     const params = new URLSearchParams(searchParams.toString());
     params.delete('category_id');
+    params.delete('properties');
+    params.delete('subproperties');
+    params.delete('is_special_offer');
+    lastUrlFiltersKey.current = JSON.stringify({
+      properties: [],
+      subproperties: [],
+      is_special_offer: false,
+    });
     router.replace(`/${lang}/places?${params.toString()}`);
     if (bbox) {
       fetchRestaurants(null, search, bbox, emptyFilters, null);
@@ -232,7 +258,8 @@ function PlacesContent() {
       <div className="bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto">
           <FilterBar
-            key={filterResetKey}
+            key={`${filterResetKey}-${urlFiltersKey}`}
+            initial={urlFilters}
             onFilterChange={handleFilterChange}
             activeCategoryLabel={
               categories.find((c) => c.id === activeCategoryId)?.title ?? null

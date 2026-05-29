@@ -3,6 +3,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Search, MapPin } from 'lucide-react';
 import { useRouter, usePathname } from 'next/navigation';
 import { Input } from '@/components/ui/input';
+import HeroFilter, { FilterSelection } from './HeroFilter';
 
 declare global {
   interface Window {
@@ -49,9 +50,15 @@ function expandBboxIfTooSmall(b: AreaBounds): AreaBounds {
 const SearchBarHeader = ({ compact = false }: { compact?: boolean }) => {
   const [search, setSearch] = useState('');
   const [locationText, setLocationText] = useState('');
+  const [filters, setFilters] = useState<FilterSelection>({
+    properties: [],
+    subproperties: [],
+    is_special_offer: false,
+  });
   const boundsRef = useRef<AreaBounds | null>(null);
   const locationInputRef = useRef<HTMLInputElement>(null);
   const searchRef = useRef('');
+  const filtersRef = useRef(filters);
   const router = useRouter();
   const pathname = usePathname();
   const lang = pathname.split('/')[1] || 'en';
@@ -59,6 +66,14 @@ const SearchBarHeader = ({ compact = false }: { compact?: boolean }) => {
 
   useEffect(() => { searchRef.current = search; }, [search]);
   useEffect(() => { langRef.current = lang; }, [lang]);
+  useEffect(() => { filtersRef.current = filters; }, [filters]);
+
+  // Append the selected property filters to a places URL query.
+  const appendFilters = (params: URLSearchParams, f: FilterSelection) => {
+    f.properties.forEach((p) => params.append('properties', String(p)));
+    f.subproperties.forEach((s) => params.append('subproperties', String(s)));
+    if (f.is_special_offer) params.set('is_special_offer', '1');
+  };
 
   // Init Google Places Autocomplete on the location input
   useEffect(() => {
@@ -129,6 +144,7 @@ const SearchBarHeader = ({ compact = false }: { compact?: boolean }) => {
           params.set('ne_lng', String(b.ne_lng));
           params.set('sw_lat', String(b.sw_lat));
           params.set('sw_lng', String(b.sw_lng));
+          appendFilters(params, filtersRef.current);
           const url = `/${langRef.current}/places?${params.toString()}`;
           console.log('[SearchArea] 🚀 Navigating to:', url);
           router.push(url);
@@ -170,6 +186,7 @@ const SearchBarHeader = ({ compact = false }: { compact?: boolean }) => {
     } else {
       console.log('[SearchArea] 📤 Submitting WITHOUT bbox (no area selected) | search:', s || '(empty)');
     }
+    appendFilters(params, filtersRef.current);
     const url = `/${lang}/places?${params.toString()}`;
     console.log('[SearchArea] 🚀 Navigating to:', url);
     router.push(url);
@@ -222,6 +239,15 @@ const SearchBarHeader = ({ compact = false }: { compact?: boolean }) => {
             className={`pl-11 border-0 bg-gray-50 sm:bg-transparent focus:bg-gray-50 placeholder:text-[#969696] shadow-none ${fieldH} focus-visible:ring-0 focus-visible:ring-offset-0 rounded-xl w-full text-black`}
           />
         </div>
+
+        {/* Filter */}
+        <HeroFilter
+          value={filters}
+          onChange={setFilters}
+          onApply={submit}
+          lang={lang}
+          compact={compact}
+        />
 
         {/* Search button */}
         <button

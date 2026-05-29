@@ -1,6 +1,7 @@
 import apiClient from '@/api';
 import Image from 'next/image';
 import Link from 'next/link';
+import BannerImg from '@/assets/images/banner.jpg';
 
 interface RandomRestaurantData {
   id: number;
@@ -16,10 +17,15 @@ interface RandomRestaurantResponse {
 
 const getRandomRestaurant = async (): Promise<RandomRestaurantResponse | null> => {
   try {
-    const data = await apiClient.get<RandomRestaurantResponse>('/random-restaurant-campaign');
+    // Short timeout so a slow/unavailable backend doesn't block SSR for 30s.
+    const data = await apiClient.get<RandomRestaurantResponse>(
+      '/random-restaurant-campaign',
+      { timeout: 2500 },
+    );
     return data;
-  } catch (error) {
-    console.error('Error fetching random restaurant campaign:', error);
+  } catch {
+    // Non-fatal: fall back to the default campaign content below.
+    console.warn('[RandomRestaurant] campaign unavailable — showing default content');
     return null;
   }
 };
@@ -35,7 +41,7 @@ export default async function RandomRestaurant({ lang }: RandomRestaurantProps) 
   const title = campaignData?.title || 'Təsadüfi restoran kampaniyası';
   const subtitle = campaignData?.subtitle || 'Sevimli restoranlarında xüsusi endirimlərdən yararlan və masanı indi rezerv et.';
   const value = campaignData?.value || '20% endirim';
-  const imageUrl = campaignData?.image_url || '/images/banner-img.jpg';
+  const imageUrl = campaignData?.image_url || BannerImg;
 
   return (
     <section className="section">
