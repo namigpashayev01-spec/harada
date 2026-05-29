@@ -46,7 +46,7 @@ function expandBboxIfTooSmall(b: AreaBounds): AreaBounds {
   return expanded;
 }
 
-const SearchBarHeader = () => {
+const SearchBarHeader = ({ compact = false }: { compact?: boolean }) => {
   const [search, setSearch] = useState('');
   const [locationText, setLocationText] = useState('');
   const boundsRef = useRef<AreaBounds | null>(null);
@@ -175,16 +175,23 @@ const SearchBarHeader = () => {
     router.push(url);
   };
 
+  const fieldH = compact ? 'h-10' : 'h-14';
+
   return (
-    <div className="bg-white rounded-[14px] px-3 sm:px-[22px] py-[10px]">
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-[16px] w-full h-full">
-        {/* Location input — 20% */}
-        <div className="sm:w-[20%] relative min-w-0 flex-shrink-0">
-          <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 z-10" />
+    <div
+      className={
+        compact
+          ? 'bg-white rounded-xl p-1.5 border border-gray-200 shadow-sm'
+          : 'bg-white rounded-2xl p-2 sm:p-2.5 shadow-[0_18px_50px_rgba(0,0,0,0.22)]'
+      }>
+      <div className="flex flex-col sm:flex-row items-stretch gap-2 sm:gap-1 w-full">
+        {/* Location input */}
+        <div className="sm:w-[34%] relative min-w-0 flex-shrink-0">
+          <MapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-brand-ink z-10" />
           <input
             ref={locationInputRef}
             type="text"
-            placeholder="Search area"
+            placeholder="Rayon / Metro"
             value={locationText}
             onChange={(e) => {
               console.log('[SearchArea] ⌨️ Location input changed:', e.target.value);
@@ -196,48 +203,34 @@ const SearchBarHeader = () => {
             }}
             onFocus={() => console.log('[SearchArea] 🎯 Location input focused')}
             onKeyDown={(e) => { if (e.key === 'Enter') e.preventDefault(); }}
-            className="pl-10 pr-3 border border-[#ECECEC] placeholder:text-[#969696] outline-none h-12 rounded-[12px] w-full text-black bg-transparent"
+            className={`pl-11 pr-3 placeholder:text-[#969696] outline-none ${fieldH} rounded-xl w-full text-black bg-gray-50 sm:bg-transparent focus:bg-gray-50 transition-colors`}
           />
         </div>
 
         {/* Divider on desktop */}
-        <div className="hidden sm:block h-8 w-px bg-gray-200 flex-shrink-0" />
+        <div className="hidden sm:block self-center h-8 w-px bg-gray-200 flex-shrink-0" />
 
-        {/* Search input — 80% */}
+        {/* Search input */}
         <div className="flex-1 relative min-w-0">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 z-10">
-            <path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2" />
-            <path d="M7 2v20" />
-            <path d="M21 15V2v0a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7" />
-          </svg>
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 z-10" />
           <Input
             type="text"
-            placeholder="Cuisine, restaurant & pub & cafe name"
+            placeholder="Mətbəx, restoran adı..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && submit()}
-            className="pl-10 border border-[#ECECEC] placeholder:text-[#969696] shadow-none h-12 focus-visible:ring-0 focus-visible:ring-offset-0 rounded-[12px] w-full text-black"
+            className={`pl-11 border-0 bg-gray-50 sm:bg-transparent focus:bg-gray-50 placeholder:text-[#969696] shadow-none ${fieldH} focus-visible:ring-0 focus-visible:ring-offset-0 rounded-xl w-full text-black`}
           />
         </div>
 
         {/* Search button */}
-        <div className="flex-shrink-0">
-          <span
-            onClick={() => submit()}
-            className="h-[43px] cursor-pointer p-[14px] inline-flex items-center justify-center w-full sm:w-[43px] rounded-[14px] bg-[#2F4F4F] hover:bg-[#1e3535]">
-            <Search className="h-[16px] w-[16px] text-white" />
-          </span>
-        </div>
+        <button
+          type="button"
+          onClick={() => submit()}
+          className={`flex-shrink-0 cursor-pointer inline-flex items-center justify-center gap-2 ${fieldH} px-6 rounded-xl bg-brand hover:bg-brand-hover text-brand-ink font-semibold transition-colors`}>
+          <Search className="h-5 w-5" />
+          AXTAR
+        </button>
       </div>
     </div>
   );

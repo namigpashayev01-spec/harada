@@ -44,6 +44,9 @@ export interface Restaurant {
   image: string;
   categories: Category[];
   properties: Property[];
+  // Lightweight list endpoints (e.g. /popular-places) return cuisine tags
+  // directly as sub_properties instead of nested under properties.
+  sub_properties?: SubProperty[];
   menus: Menu[];
   galleries: Gallery[];
   latitude: string;
@@ -51,6 +54,11 @@ export interface Restaurant {
   average_price: string;
   is_vip: boolean;
   is_special_offer: boolean;
+  // Optional fields surfaced on cards when the API provides them.
+  rating?: number;
+  reviews_count?: number;
+  discount?: number; // percentage, e.g. 30
+  district?: string;
   working_hours?: WorkingDay[];
   map_link?: string;
   open_from?: string;

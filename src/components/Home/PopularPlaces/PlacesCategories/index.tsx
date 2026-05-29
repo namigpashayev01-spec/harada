@@ -65,7 +65,7 @@ const PlacesCategories = ({
               onClick={(e) => handleCategoryClick(e, category.id)}
               className={`whitespace-nowrap px-6 py-2.5 flex items-center gap-2 rounded-full font-semibold text-sm md:text-base transition-colors select-none ${
                 activeCategoryId === category.id
-                  ? 'bg-[#F57D0D] text-white'
+                  ? 'bg-[#006653] text-white'
                   : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
               }`}>
               {category.icon && (category.icon.startsWith('http') || category.icon.startsWith('/')) && (

@@ -20,21 +20,22 @@ const BlogCard = ({ id, title, image, date, view, slug, lang }: BlogCardProps) =
   const href = `/${lang}/blog/${slugValue}`;
 
   return (
-    <Card className="w-full overflow-hidden pt-0 bg-white gap-0 pb-0">
+    <Card className="card-hover w-full overflow-hidden pt-0 bg-white gap-0 pb-0 border border-gray-100 rounded-2xl">
       <Link href={href} className="block group">
         <div className="relative aspect-[4/3] w-full overflow-hidden">
           <Image
             src={image}
             alt={title ?? ''}
             fill
-            className="object-cover transition-transform duration-300 group-hover:scale-105"
+            sizes="(max-width: 640px) 85vw, (max-width: 1024px) 45vw, 30vw"
+            className="object-cover transition-transform duration-500 group-hover:scale-105"
           />
         </div>
       </Link>
 
       <div className="pt-[18px] px-[13px] pb-[8px]">
         <Link href={href}>
-          <h2 className="text-xl font-bold text-gray-900 leading-tight mb-8 hover:text-blue-600 transition-colors cursor-pointer">
+          <h2 className="text-xl font-bold text-gray-900 leading-tight mb-8 hover:text-brand-ink transition-colors cursor-pointer">
             {title}
           </h2>
         </Link>

@@ -1,5 +1,6 @@
 import apiClient from '@/api';
 import Image from 'next/image';
+import Link from 'next/link';
 
 interface RandomRestaurantData {
   id: number;
@@ -23,39 +24,54 @@ const getRandomRestaurant = async (): Promise<RandomRestaurantResponse | null> =
   }
 };
 
-export default async function RandomRestaurant() {
+interface RandomRestaurantProps {
+  lang: string;
+}
+
+export default async function RandomRestaurant({ lang }: RandomRestaurantProps) {
   const response = await getRandomRestaurant();
   const campaignData = response?.data;
 
-  const title = campaignData?.title || 'Random Restaurant campaign';
-  const subtitle = campaignData?.subtitle || 'Lorem ipsum dolor sit amet consectetur. Vel nullam adipiscing nec arcu vel justo.';
-  const value = campaignData?.value || '20% off';
+  const title = campaignData?.title || 'Təsadüfi restoran kampaniyası';
+  const subtitle = campaignData?.subtitle || 'Sevimli restoranlarında xüsusi endirimlərdən yararlan və masanı indi rezerv et.';
+  const value = campaignData?.value || '20% endirim';
   const imageUrl = campaignData?.image_url || '/images/banner-img.jpg';
 
   return (
-    <section>
+    <section className="section">
       <div className="wrapper">
-        <div className="rounded-[12px] overflow-hidden relative min-h-[40vh] w-full">
+        <div className="rounded-[20px] overflow-hidden relative min-h-[42vh] w-full flex items-center">
           <Image
             src={imageUrl}
             alt={title}
             fill
+            sizes="100vw"
             className="object-cover"
             style={{ transform: 'scaleX(-1)' }}
             priority
           />
-          <div className="absolute inset-0 bg-black/40" />
-          <div className="flex flex-col lg:flex-row items-start lg:items-center h-[40vh] justify-between py-6 sm:py-8 lg:py-[46px] pl-4 sm:pl-6 lg:pl-[45px] text-white z-20 relative">
-            <div className="max-w-full sm:max-w-[400px] lg:max-w-[555px] mb-4 lg:mb-0">
-              <h4 className="text-2xl sm:text-3xl md:text-4xl lg:text-[48px] font-semibold leading-tight">
+          <div className="absolute inset-0 bg-gradient-to-r from-black/75 via-black/45 to-transparent" />
+
+          <div className="relative z-20 w-full flex flex-col lg:flex-row lg:items-center justify-between gap-8 py-10 lg:py-14 px-6 sm:px-10 lg:px-[56px] text-white">
+            <div className="max-w-full lg:max-w-[600px]">
+              <span className="inline-flex items-center rounded-full bg-orange px-3 py-1 text-xs font-semibold tracking-wide uppercase">
+                Məhdud təklif
+              </span>
+              <h4 className="mt-4 text-3xl md:text-4xl lg:text-[46px] font-semibold leading-[1.1] tracking-tight">
                 {title}
               </h4>
-              <p className="text-sm sm:text-base lg:text-lg mt-2">
+              <p className="text-sm sm:text-base lg:text-lg mt-3 text-white/85">
                 {subtitle}
               </p>
+              <Link
+                href={`/${lang}/places`}
+                className="mt-6 inline-flex items-center justify-center rounded-xl bg-orange hover:bg-orange-hover px-7 py-3 text-sm font-semibold text-white transition-colors">
+                İndi rezerv et
+              </Link>
             </div>
-            <div className="pr-4 sm:pr-8 md:pr-16 lg:pr-[200px] self-end lg:self-auto">
-              <span className="text-[#E0E19B] text-3xl sm:text-4xl md:text-5xl lg:text-[64px] font-semibold font-raleway">
+
+            <div className="shrink-0 self-start lg:self-center">
+              <span className="text-[#E0E19B] text-4xl sm:text-5xl md:text-6xl lg:text-[72px] font-semibold font-raleway leading-none">
                 {value}
               </span>
             </div>

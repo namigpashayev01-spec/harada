@@ -1,74 +1,86 @@
 import BannerImg from '@/assets/images/banner.jpg';
 import SearchBarHeader from '@/components/Header/SearchBarHeader';
 import Image from 'next/image';
-import FoodIcon from '@/assets/icons/food-icon.svg';
-// import OurSiteUsers from '@/components/Header/OurSiteUsers';
+import Link from 'next/link';
 
-const Header = () => {
+interface HeaderProps {
+  lang: string;
+}
+
+const POPULAR_SEARCHES = [
+  'Azərbaycan mətbəxi',
+  'Avropa',
+  'Pizza',
+  'Kafe',
+  'Dəniz məhsulları',
+];
+
+const Header = ({ lang }: HeaderProps) => {
   return (
-    <>
-      <section className="py-[45px]">
-        <div className="wrapper">
-          <div
-            style={{
-              background: `url(${BannerImg.src})`,
-              backgroundSize: 'cover',
-              backgroundRepeat: 'no-repeat',
-              backgroundPosition: 'center center',
-              minHeight: '80vh',
-              width: '100%',
-              position: 'relative',
-            }}
-            className="rounded-[12px] flex items-center justify-center overflow-hidden">
-            {/* <OurSiteUsers /> */}
-            <div
-              style={{
-                backgroundColor: 'rgba(0, 0, 0, 0.34)',
-              }}
-              className="absolute inset-0 z-10"
-            />
-            <div className="relative z-40 mx-auto text-center text-white px-4">
-              <span
-                className="lg:mt-0 mt-5 absolute top-[120%] sm:top-[0%] left-1/2 transform -translate-x-1/2 -translate-y-[100%] text-white inline-flex items-center gap-[10px] px-4 py-2 rounded-full border border-white/50 bg-[#BEBEBE45]/10 backdrop-blur-sm"
-                style={{ backdropFilter: 'blur(1.8px)' }}>
-                <Image
-                  src={FoodIcon}
-                  className="w-[24px] h-[24px]"
-                  alt="Food Icon"
-                  priority
-                />
-                Diny-Test
+    <section className="pt-4 pb-6 md:pt-6 md:pb-10">
+      <div className="wrapper">
+        <div
+          className="relative overflow-hidden rounded-[20px] px-6 py-12 sm:px-10 md:px-14 md:py-16 lg:py-20"
+          style={{
+            background:
+              'linear-gradient(135deg, #013a30 0%, #006653 55%, #0a7d54 100%)',
+          }}>
+          {/* Decorative glow */}
+          <div className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-white/5" />
+          <div className="pointer-events-none absolute -bottom-28 left-1/3 h-72 w-72 rounded-full bg-black/10" />
+
+          <div className="relative z-10 grid items-center gap-10 lg:grid-cols-[1.1fr_0.9fr]">
+            {/* Left: copy + search */}
+            <div className="text-white">
+              <span className="inline-flex items-center gap-2 rounded-full border border-white/30 bg-white/10 px-4 py-1.5 text-sm font-medium backdrop-blur-sm">
+                🍽️ Bakının ən yaxşı masaları
               </span>
 
-              <h1 className="pt-4 text-4xl md:text-[60px] font-semibold mb-[22px] md:mb-[42px] break-words sm:text-nowrap">
-                Find your Nearby Restaurants
+              <h1 className="mt-5 text-3xl font-bold leading-[1.1] tracking-tight sm:text-4xl lg:text-[52px]">
+                Bakıda ən yaxşı restoranı <br className="hidden sm:block" />
+                tap və rezerv et
               </h1>
-              <SearchBarHeader />
-              {/* <div className="mt-4 flex flex-col items-center justify-center gap-4">
-                <p className="font-semibold text-center">Popular Search :</p>
-                <ul className="flex flex-wrap justify-center gap-3">
-                  <li
-                    className="text-white text-sm inline-flex items-center gap-2 px-4 py-1 rounded-full border border-white/50 bg-[#BEBEBE45]/10 backdrop-blur-lg"
-                    style={{ backdropFilter: 'blur(9.9px)' }}>
-                    Asia
-                  </li>
-                  <li
-                    className="text-white text-sm inline-flex items-center gap-2 px-4 py-1 rounded-full border border-white/50 bg-[#BEBEBE45]/10 backdrop-blur-lg"
-                    style={{ backdropFilter: 'blur(9.9px)' }}>
-                    Sushi
-                  </li>
-                  <li
-                    className="text-white text-sm inline-flex items-center gap-2 px-4 py-1 rounded-full border border-white/50 bg-[#BEBEBE45]/10 backdrop-blur-lg"
-                    style={{ backdropFilter: 'blur(9.9px)' }}>
-                    Friends cafe
-                  </li>
-                </ul>
-              </div> */}
+              <p className="mt-4 max-w-xl text-base text-white/85 md:text-lg">
+                Rayon və ya mətbəx üzrə axtar, masanı bir neçə saniyəyə rezerv et —
+                pulsuz və ani təsdiq.
+              </p>
+
+              {/* Search */}
+              <div className="mt-7">
+                <SearchBarHeader />
+              </div>
+
+              {/* Popular searches */}
+              <div className="mt-5 flex flex-wrap items-center gap-2.5">
+                <span className="text-sm text-white/75">Populyar:</span>
+                {POPULAR_SEARCHES.map((term) => (
+                  <Link
+                    key={term}
+                    href={`/${lang}/places?search=${encodeURIComponent(term)}`}
+                    className="rounded-full border border-white/25 bg-white/10 px-3.5 py-1.5 text-sm text-white backdrop-blur-sm transition-colors hover:bg-white/20">
+                    {term}
+                  </Link>
+                ))}
+              </div>
+            </div>
+
+            {/* Right: floating food image */}
+            <div className="relative hidden lg:block">
+              <div className="relative ml-auto aspect-[4/3] w-full max-w-[480px] overflow-hidden rounded-2xl shadow-2xl rotate-2">
+                <Image
+                  src={BannerImg}
+                  alt="Bakı restoranları"
+                  fill
+                  priority
+                  sizes="480px"
+                  className="object-cover"
+                />
+              </div>
             </div>
           </div>
         </div>
-      </section>
-    </>
+      </div>
+    </section>
   );
 };
 

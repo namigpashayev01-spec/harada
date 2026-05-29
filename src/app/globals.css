@@ -41,28 +41,40 @@
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
+
+  /* Brand design tokens (single source of truth) */
+  --color-brand: #9fe870;          /* primary — bright lime (fills/CTA) */
+  --color-brand-hover: #8fdc5c;
+  --color-brand-soft: #eefae1;
+  --color-brand-ink: #14532d;      /* dark green — text on brand + links */
+  --color-orange: #e67e22;         /* secondary amber */
+  --color-orange-hover: #ca6f1e;
+  --color-orange-soft: #fdf0e2;
+  --color-discount: #1e8449;       /* green discount accent */
+  --color-discount-soft: #e7f4ec;
+  --color-surface: #fafafa;
 }
 
 :root {
-  --radius: 0.625rem;
-  --background: oklch(1 0 0);
+  --radius: 0.75rem;
+  --background: #fafafa;
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.145 0 0);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
+  --primary: #9fe870;
+  --primary-foreground: #14532d;
   --secondary: oklch(0.97 0 0);
   --secondary-foreground: oklch(0.205 0 0);
   --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
+  --muted-foreground: oklch(0.5 0 0);
   --accent: oklch(0.97 0 0);
   --accent-foreground: oklch(0.205 0 0);
   --destructive: oklch(0.577 0.245 27.325);
   --border: oklch(0.922 0 0);
   --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
+  --ring: #9fe870;
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
   --chart-3: oklch(0.398 0.07 227.392);
@@ -118,7 +130,9 @@
   }
   body {
     @apply bg-background text-foreground;
-    font-family: var(--font-poppins);
+    font-family: var(--font-inter), system-ui, -apple-system, 'Segoe UI', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
   h1,
@@ -126,14 +140,38 @@
   h3,
   h4,
   h5,
-  h6,
-  p {
-    font-family: var(--font-raleway);
+  h6 {
+    font-family: var(--font-inter), system-ui, -apple-system, 'Segoe UI', sans-serif;
   }
 }
 
 .wrapper {
   @apply w-full px-[10px] sm:px-[1rem] md:px-[2rem] lg:px-[42px] xl:px-[72px] mx-auto;
+}
+
+/* ---- Design-system helpers ---- */
+
+/* Consistent vertical rhythm between home sections */
+.section {
+  @apply py-10 md:py-14;
+}
+
+/* Section heading (title + optional "view all" link) */
+.section-title {
+  @apply text-black font-semibold text-[22px] md:text-[28px] lg:text-[34px] tracking-tight;
+}
+
+/* Card base shadow + lift on hover */
+.card-shadow {
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+}
+.card-hover {
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  @apply transition-all duration-300 ease-out;
+}
+.card-hover:hover {
+  @apply -translate-y-1;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.14);
 }
 
 .swiper-backface-hidden {

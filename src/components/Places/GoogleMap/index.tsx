@@ -141,7 +141,7 @@ export default function GoogleMap({
         icon: {
           path: window.google.maps.SymbolPath.CIRCLE,
           scale: 11,
-          fillColor: '#2F4F4F',
+          fillColor: '#006653',
           fillOpacity: 1,
           strokeColor: 'white',
           strokeWeight: 2.5,
@@ -159,7 +159,7 @@ export default function GoogleMap({
         : '';
 
       const distanceHtml = location.distance != null
-        ? `<span style="display:inline-block;margin-top:4px;font-size:10px;font-weight:600;color:#CD7F4E;background:#FDF3EC;padding:2px 8px;border-radius:20px;">${location.distance.toFixed(1)} km</span>`
+        ? `<span style="display:inline-block;margin-top:4px;font-size:10px;font-weight:600;color:#006653;background:#e7f4ec;padding:2px 8px;border-radius:20px;">${location.distance.toFixed(1)} km</span>`
         : '';
 
       const linkHref = location.slug
@@ -185,7 +185,7 @@ export default function GoogleMap({
                 display:block;
                 margin-top:12px;
                 text-align:center;
-                background:#2F4F4F;
+                background:#006653;
                 color:#fff;
                 padding:9px 0;
                 border-radius:8px;
@@ -231,7 +231,7 @@ export default function GoogleMap({
       <div ref={mapContainerRef} className="w-full h-full rounded-lg" />
       {!isLoaded && (
         <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-100 rounded-lg gap-3">
-          <div className="animate-spin rounded-full h-10 w-10 border-[3px] border-gray-200 border-t-[#2F4F4F]" />
+          <div className="animate-spin rounded-full h-10 w-10 border-[3px] border-gray-200 border-t-[#006653]" />
           <p className="text-sm text-gray-500">Loading map…</p>
         </div>
       )}

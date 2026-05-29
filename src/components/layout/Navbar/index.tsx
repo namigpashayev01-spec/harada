@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { Heart, User, LogOut } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import NavLink from './NavLink';
+import SearchBarHeader from '@/components/Header/SearchBarHeader';
 import { navbarData } from '@/data/navbarData';
 import LogoImg from '@/assets/images/logo.png';
 import LanguageSwitcher from './LanguageSwitcher';
@@ -57,7 +58,7 @@ export default function Navbar({ logo }: NavbarProps) {
         isScrolled ? 'shadow-md' : '',
       )}>
       <div className="px-[10px] xl:px-[72px] lg:px-[42px] mx-auto py-[20px]">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-[36px]">
             <Link href={`/${urlLang}`} className="flex-shrink-0">
               <div className="w-[72px]">
@@ -72,13 +73,26 @@ export default function Navbar({ logo }: NavbarProps) {
               </div>
             </Link>
 
-            <nav className="hidden md:flex items-center space-x-4 xl:space-x-8">
+            <nav
+              className={cn(
+                'hidden md:flex items-center space-x-4 xl:space-x-8',
+                isScrolled && 'lg:hidden',
+              )}>
               {navbarData.map((item) => (
                 <NavLink key={item.link} href={item.link}>
                   {item.text}
                 </NavLink>
               ))}
             </nav>
+          </div>
+
+          {/* Compact search — appears on scroll (desktop) */}
+          <div
+            className={cn(
+              'hidden flex-1 max-w-lg',
+              isScrolled ? 'lg:block' : '',
+            )}>
+            <SearchBarHeader compact />
           </div>
 
           <div className="flex items-center space-x-4">
@@ -94,7 +108,7 @@ export default function Navbar({ logo }: NavbarProps) {
                   <Link
                     href={`/${urlLang}/dashboard/favorites`}
                     className="hidden md:flex text-red-500 hover:text-red-600 transition-colors"
-                    aria-label="Favorites">
+                    aria-label="Sevimlilər">
                     <Heart size={24} />
                   </Link>
                   <div className="relative">
@@ -109,12 +123,12 @@ export default function Navbar({ logo }: NavbarProps) {
                           className="w-9 h-9 rounded-full object-cover border border-gray-200"
                         />
                       ) : (
-                        <div className="w-9 h-9 rounded-full bg-[#F57D0D]/10 text-[#F57D0D] flex items-center justify-center">
+                        <div className="w-9 h-9 rounded-full bg-[#006653]/10 text-[#006653] flex items-center justify-center">
                           <User size={18} />
                         </div>
                       )}
                       <span className="text-sm font-medium max-w-[140px] truncate">
-                        {user?.name ?? 'Account'}
+                        {user?.name ?? 'Hesab'}
                       </span>
                     </button>
                     {menuOpen && (
@@ -122,22 +136,22 @@ export default function Navbar({ logo }: NavbarProps) {
                         <Link
                           href={`/${urlLang}/dashboard/settings`}
                           className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
-                          Profile settings
+                          Profil ayarları
                         </Link>
                         <Link
                           href={`/${urlLang}/dashboard/reservations`}
                           className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
-                          Reservations
+                          Rezervlər
                         </Link>
                         <Link
                           href={`/${urlLang}/dashboard/favorites`}
                           className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
-                          Favorites
+                          Sevimlilər
                         </Link>
                         <Link
                           href={`/${urlLang}/dashboard/reviews`}
                           className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
-                          Reviews
+                          Rəylər
                         </Link>
                         <div className="my-1 border-t border-gray-100" />
                         <button
@@ -147,7 +161,7 @@ export default function Navbar({ logo }: NavbarProps) {
                           }}
                           className="w-full text-left flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50">
                           <LogOut size={16} />
-                          Log out
+                          Çıxış
                         </button>
                       </div>
                     )}
@@ -158,12 +172,12 @@ export default function Navbar({ logo }: NavbarProps) {
                   <Link
                     href={`/${urlLang}/register`}
                     className="hidden md:block text-gray-700 hover:text-gray-900 xl:text-base text-[14px] font-medium">
-                    Sign up
+                    Qeydiyyat
                   </Link>
                   <Link
                     href={`/${urlLang}/login`}
-                    className="hidden md:flex bg-[#F57D0D] xl:text-base text-[14px] items-center justify-center text-white px-6 py-2 rounded-md font-medium hover:bg-opacity-90 transition-colors">
-                    Log in
+                    className="hidden md:flex bg-[#006653] xl:text-base text-[14px] items-center justify-center text-white px-6 py-2 rounded-md font-medium hover:bg-opacity-90 transition-colors">
+                    Daxil ol
                   </Link>
                 </>
               ))}

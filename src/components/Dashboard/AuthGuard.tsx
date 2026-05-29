@@ -19,7 +19,7 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
   if (isInitializing || !isAuthenticated) {
     return (
       <div className="min-h-[60vh] flex items-center justify-center">
-        <Loader2 className="w-6 h-6 animate-spin text-[#F57D0D]" />
+        <Loader2 className="w-6 h-6 animate-spin text-[#006653]" />
       </div>
     );
   }

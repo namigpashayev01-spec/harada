@@ -79,13 +79,13 @@ export default function MobileBottomNav() {
                   size={22}
                   className={cn(
                     'transition-colors',
-                    active ? 'text-[#F57D0D]' : 'text-gray-500',
+                    active ? 'text-[#006653]' : 'text-gray-500',
                   )}
                 />
                 <span
                   className={cn(
                     'text-[10px] font-medium transition-colors',
-                    active ? 'text-[#F57D0D]' : 'text-gray-500',
+                    active ? 'text-[#006653]' : 'text-gray-500',
                   )}>
                   {label}
                 </span>
@@ -101,13 +101,13 @@ export default function MobileBottomNav() {
               size={22}
               className={cn(
                 'transition-colors',
-                moreActive ? 'text-[#F57D0D]' : 'text-gray-500',
+                moreActive ? 'text-[#006653]' : 'text-gray-500',
               )}
             />
             <span
               className={cn(
                 'text-[10px] font-medium transition-colors',
-                moreActive ? 'text-[#F57D0D]' : 'text-gray-500',
+                moreActive ? 'text-[#006653]' : 'text-gray-500',
               )}>
               More
             </span>
@@ -157,13 +157,13 @@ export default function MobileBottomNav() {
             <Link
               href={`/${lang}/about`}
               className="flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-gray-50">
-              <Info className="h-5 w-5 text-[#F57D0D]" />
+              <Info className="h-5 w-5 text-[#006653]" />
               <span className="text-sm font-medium text-gray-800">About Us</span>
             </Link>
             <Link
               href={`/${lang}/contact`}
               className="flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-gray-50">
-              <Phone className="h-5 w-5 text-[#F57D0D]" />
+              <Phone className="h-5 w-5 text-[#006653]" />
               <span className="text-sm font-medium text-gray-800">Contact</span>
             </Link>
           </div>
@@ -187,7 +187,7 @@ export default function MobileBottomNav() {
                   className={cn(
                     'flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-sm font-medium border transition-colors',
                     active
-                      ? 'border-[#F57D0D] bg-[#F57D0D]/5 text-[#F57D0D]'
+                      ? 'border-[#006653] bg-[#006653]/5 text-[#006653]'
                       : 'border-gray-200 text-gray-700 hover:bg-gray-50',
                   )}>
                   {active && <Check className="h-3.5 w-3.5" />}

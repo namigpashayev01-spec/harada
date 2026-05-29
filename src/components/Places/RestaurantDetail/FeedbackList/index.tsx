@@ -101,7 +101,7 @@ export default function FeedbackList({ slug, refreshKey = 0 }: FeedbackListProps
                 </div>
                 <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
                   <div
-                    className="h-full bg-[#F57D0D] rounded-full transition-all"
+                    className="h-full bg-[#006653] rounded-full transition-all"
                     style={{ width: `${percent}%` }}
                   />
                 </div>
@@ -115,7 +115,7 @@ export default function FeedbackList({ slug, refreshKey = 0 }: FeedbackListProps
       <div className="mt-6 space-y-4">
         {shownFeedbacks.map((fb) => (
           <div key={fb.id} className="flex gap-3">
-            <div className="w-10 h-10 rounded-full bg-orange-100 text-[#F57D0D] flex items-center justify-center text-sm font-semibold shrink-0 overflow-hidden">
+            <div className="w-10 h-10 rounded-full bg-[#eefae1] text-[#006653] flex items-center justify-center text-sm font-semibold shrink-0 overflow-hidden">
               {fb.profile && fb.profile.includes('/storage/') ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={fb.profile} alt={fb.name} className="w-full h-full object-cover" />
@@ -144,7 +144,7 @@ export default function FeedbackList({ slug, refreshKey = 0 }: FeedbackListProps
         <div className="mt-6 flex justify-center">
           <button
             onClick={() => setVisible((v) => v + PAGE_SIZE)}
-            className="px-6 py-2 rounded-full border border-[#F57D0D] text-[#F57D0D] text-sm font-medium hover:bg-[#F57D0D] hover:text-white transition-colors">
+            className="px-6 py-2 rounded-full border border-[#006653] text-[#006653] text-sm font-medium hover:bg-[#006653] hover:text-white transition-colors">
             Load more ({feedbacks.length - visible} remaining)
           </button>
         </div>

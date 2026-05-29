@@ -36,7 +36,7 @@ export default function RestaurantCard({ restaurant }: RestaurantCardProps) {
           />
         </Link>
         {restaurant.is_vip && (
-          <span className="absolute top-2 left-2 bg-[#F57D0D] text-white text-[10px] font-semibold px-2 py-0.5 rounded-full z-10">
+          <span className="absolute top-2 left-2 bg-[#006653] text-white text-[10px] font-semibold px-2 py-0.5 rounded-full z-10">
             VIP
           </span>
         )}
@@ -52,7 +52,7 @@ export default function RestaurantCard({ restaurant }: RestaurantCardProps) {
           <div className="flex items-start justify-between mb-1">
             <div>
               <Link href={href}>
-                <h3 className="text-xl font-semibold text-gray-900 hover:text-[#CD7F4E] transition-colors">
+                <h3 className="text-xl font-semibold text-gray-900 hover:text-[#006653] transition-colors">
                   {restaurant.title}
                 </h3>
               </Link>
@@ -114,7 +114,7 @@ export default function RestaurantCard({ restaurant }: RestaurantCardProps) {
         <div className="mt-3">
           <Link
             href={href}
-            className="inline-flex items-center gap-1 bg-[#2F4F4F] hover:bg-[#1e3535] text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors">
+            className="inline-flex items-center gap-1 bg-[#006653] hover:bg-[#00543f] text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors">
             <Star className="h-4 w-4" />
             View Details
           </Link>

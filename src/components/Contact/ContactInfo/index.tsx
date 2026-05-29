@@ -34,7 +34,7 @@ export default function ContactInfo() {
           return (
             <div key={index} className="flex items-center space-x-4">
               <div className="flex-shrink-0">
-                <Icon className="w-6 h-6 text-[#1C5858] mt-1" />
+                <Icon className="w-6 h-6 text-[#006653] mt-1" />
               </div>
               <div>
                 <p className="text-gray-600">{item.text}</p>

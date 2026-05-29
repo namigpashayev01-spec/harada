@@ -85,7 +85,7 @@ export default function FavoritesPage() {
 
       {isLoading ? (
         <div className="flex items-center justify-center py-16">
-          <Loader2 className="w-6 h-6 animate-spin text-[#F57D0D]" />
+          <Loader2 className="w-6 h-6 animate-spin text-[#006653]" />
         </div>
       ) : isError ? (
         <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">

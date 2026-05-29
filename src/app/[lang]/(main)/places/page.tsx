@@ -184,7 +184,7 @@ function PlacesContent() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Banner */}
-      <div className="relative bg-[#CD7F4E] pt-8 pb-12 px-4">
+      <div className="relative bg-[#006653] pt-8 pb-12 px-4">
         <div className="absolute inset-0 overflow-hidden opacity-40">
           <Image
             src={PlaceBanner}
@@ -207,7 +207,7 @@ function PlacesContent() {
                 onClick={() => handleCategorySelect(null)}
                 className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors border ${
                   activeCategoryId === null
-                    ? 'bg-[#F57D0D] text-white border-[#F57D0D]'
+                    ? 'bg-[#006653] text-white border-[#006653]'
                     : 'border-gray-200 text-gray-700 hover:bg-gray-50'
                 }`}>
                 All
@@ -218,7 +218,7 @@ function PlacesContent() {
                   onClick={() => handleCategorySelect(cat.id)}
                   className={`flex items-center gap-1.5 rounded-full px-4 py-1.5 text-sm font-medium transition-colors border ${
                     activeCategoryId === cat.id
-                      ? 'bg-[#F57D0D] text-white border-[#F57D0D]'
+                      ? 'bg-[#006653] text-white border-[#006653]'
                       : 'border-gray-200 text-gray-700 hover:bg-gray-50'
                   }`}>
                   {cat.icon && (
@@ -268,7 +268,7 @@ function PlacesContent() {
 
             <Button
               onClick={() => setShowMobileMap(!showMobileMap)}
-              className="lg:hidden w-full bg-[#CD7F4E] hover:bg-[#B86F3E] text-white">
+              className="lg:hidden w-full bg-[#006653] hover:bg-[#00543f] text-white">
               <MapIcon className="h-4 w-4 mr-2" />
               {showMobileMap ? 'Show List' : 'Show Map'}
             </Button>
@@ -306,7 +306,7 @@ function PlacesContent() {
                       }}
                       className={`transition-all duration-300 cursor-pointer ${
                         selectedSlug === rSlug
-                          ? 'ring-2 ring-[#CD7F4E] rounded-lg shadow-lg'
+                          ? 'ring-2 ring-[#006653] rounded-lg shadow-lg'
                           : ''
                       }`}>
                       <RestaurantCard restaurant={restaurant} />

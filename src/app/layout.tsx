@@ -2,7 +2,7 @@ import type React from 'react';
 import type { Metadata } from 'next';
 import './globals.css';
 import { VALID_LANGUAGES } from '../../middleware';
-import { Poppins, Raleway } from 'next/font/google';
+import { Poppins, Raleway, Inter } from 'next/font/google';
 import settingService from '@/services/setting.service';
 
 const poppins = Poppins({
@@ -17,6 +17,13 @@ const raleway = Raleway({
   display: 'swap',
   variable: '--font-raleway',
   weight: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
+});
+
+const inter = Inter({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-inter',
+  weight: ['400', '500', '600', '700', '800'],
 });
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -60,7 +67,7 @@ export default async function RootLayout({
 
   return (
     <html lang={lang}>
-      <body suppressHydrationWarning className={`${poppins.variable} ${raleway.variable}`}>
+      <body suppressHydrationWarning className={`${poppins.variable} ${raleway.variable} ${inter.variable}`}>
         {children}
       </body>
     </html>

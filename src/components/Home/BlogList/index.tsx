@@ -20,12 +20,15 @@ const BlogList = () => {
   const blogData = data?.data ?? [];
 
   return (
-    <section className="pt-[70px]">
+    <section className="section">
       <div className="wrapper">
-        <div className="flex flex-col gap-[6px]">
-          <h3 className="text-[38px] font-semibold text-black">Blogs</h3>
+        <div className="flex flex-col gap-1.5">
+          <h2 className="section-title">Bloqumuzdan</h2>
+          <p className="text-sm md:text-base text-muted-foreground">
+            Süfrədən məsləhətlər, bələdçilər və hekayələr
+          </p>
         </div>
-        <div className="relative pt-[32px]">
+        <div className="relative pt-7">
           <Swiper
             onBeforeInit={(swiper) => {
               swiperRef.current = swiper;

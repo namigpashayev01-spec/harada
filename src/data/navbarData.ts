@@ -5,22 +5,22 @@ export type NavLinkType = {
 export const navbarData: NavLinkType[] = [
   {
     link: '/',
-    text: 'Home',
+    text: 'Ana səhifə',
   },
   {
     link: '/about',
-    text: 'About Us',
+    text: 'Haqqımızda',
   },
   {
     link: '/places',
-    text: 'Places',
+    text: 'Məkanlar',
   },
   {
     link: '/blog',
-    text: 'Blog',
+    text: 'Bloq',
   },
   {
     link: '/contact',
-    text: 'Contact',
+    text: 'Əlaqə',
   },
 ];

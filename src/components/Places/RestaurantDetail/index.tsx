@@ -252,12 +252,12 @@ export default function RestaurantDetail({
         <div className="max-w-7xl mx-auto px-4 py-3">
           <div className="flex items-center gap-2 text-sm text-gray-600">
             <Link href={`/${lang}`}>
-              <Home className="h-4 w-4 hover:text-[#CD7F4E]" />
+              <Home className="h-4 w-4 hover:text-[#006653]" />
             </Link>
             <ChevronRight className="h-4 w-4" />
             <Link
               href={`/${lang}/places`}
-              className="hover:text-[#CD7F4E] transition-colors">
+              className="hover:text-[#006653] transition-colors">
               Places
             </Link>
             <ChevronRight className="h-4 w-4" />
@@ -317,7 +317,7 @@ export default function RestaurantDetail({
                 {/* Badges */}
                 <div className="absolute top-4 left-4 flex gap-2">
                   {restaurant.is_vip && (
-                    <span className="bg-[#F57D0D] text-white text-xs font-bold px-3 py-1 rounded-full">
+                    <span className="bg-[#006653] text-white text-xs font-bold px-3 py-1 rounded-full">
                       VIP
                     </span>
                   )}
@@ -338,7 +338,7 @@ export default function RestaurantDetail({
                       onClick={() => setCurrentImageIndex(idx)}
                       className={`relative flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 transition-colors ${
                         idx === currentImageIndex
-                          ? 'border-[#CD7F4E]'
+                          ? 'border-[#006653]'
                           : 'border-transparent'
                       }`}>
                       <Image
@@ -374,7 +374,7 @@ export default function RestaurantDetail({
                       }
                       setFeedbackOpen(true);
                     }}
-                    className="px-4 py-2 bg-[#F57D0D] hover:bg-orange-600 text-white text-sm font-medium rounded-lg transition-colors">
+                    className="px-4 py-2 bg-[#006653] hover:bg-[#00543f] text-white text-sm font-medium rounded-lg transition-colors">
                     Give Feedback
                   </button>
                 </div>
@@ -395,7 +395,7 @@ export default function RestaurantDetail({
                         href={restaurant.map_link}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="hover:text-[#CD7F4E] underline underline-offset-2 transition-colors">
+                        className="hover:text-[#006653] underline underline-offset-2 transition-colors">
                         {restaurant.address}
                       </a>
                     ) : (
@@ -614,7 +614,7 @@ export default function RestaurantDetail({
             {/* Reservation card */}
             <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
               <div className="p-5 border-b border-gray-100 flex items-center gap-2">
-                <Calendar className="h-5 w-5 text-[#F57D0D]" />
+                <Calendar className="h-5 w-5 text-[#006653]" />
                 <h3 className="font-semibold text-gray-900 text-lg">
                   Reserve a Table
                 </h3>
@@ -631,7 +631,7 @@ export default function RestaurantDetail({
                   </p>
                   <button
                     onClick={resetReservation}
-                    className="mt-2 text-sm text-[#F57D0D] underline underline-offset-2">
+                    className="mt-2 text-sm text-[#006653] underline underline-offset-2">
                     Make another reservation
                   </button>
                 </div>
@@ -679,8 +679,8 @@ export default function RestaurantDetail({
                               }}
                               className={`px-4 py-2 rounded-lg text-sm font-medium border transition-colors ${
                                 selectedMeal === meal.type
-                                  ? 'bg-[#F57D0D] text-white border-[#F57D0D]'
-                                  : 'border-gray-200 text-gray-700 hover:border-[#F57D0D] hover:text-[#F57D0D]'
+                                  ? 'bg-[#006653] text-white border-[#006653]'
+                                  : 'border-gray-200 text-gray-700 hover:border-[#006653] hover:text-[#006653]'
                               }`}>
                               {meal.name}
                             </button>
@@ -706,8 +706,8 @@ export default function RestaurantDetail({
                             onClick={() => setSelectedTime(h)}
                             className={`py-2 text-sm font-medium rounded-lg border transition-colors ${
                               selectedTime === h
-                                ? 'bg-[#F57D0D] text-white border-[#F57D0D]'
-                                : 'border-gray-200 text-gray-600 hover:border-[#F57D0D] hover:text-[#F57D0D]'
+                                ? 'bg-[#006653] text-white border-[#006653]'
+                                : 'border-gray-200 text-gray-600 hover:border-[#006653] hover:text-[#006653]'
                             }`}>
                             {h}
                           </button>
@@ -735,7 +735,7 @@ export default function RestaurantDetail({
                           onChange={(e) =>
                             setGuestCount(Math.max(1, Number(e.target.value)))
                           }
-                          className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#F57D0D]/30 focus:border-[#F57D0D]"
+                          className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#006653]/30 focus:border-[#006653]"
                         />
                       </div>
 
@@ -748,7 +748,7 @@ export default function RestaurantDetail({
                           placeholder="Name for person who is booking"
                           value={guestName}
                           onChange={(e) => setGuestName(e.target.value.replace(/[^a-zA-ZÀ-ÿğüşıöçĞÜŞİÖÇ\s]/g, ''))}
-                          className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#F57D0D]/30 focus:border-[#F57D0D]"
+                          className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#006653]/30 focus:border-[#006653]"
                         />
                       </div>
 
@@ -761,7 +761,7 @@ export default function RestaurantDetail({
                           placeholder="Mobile number"
                           value={phone}
                           onChange={(e) => setPhone(e.target.value.replace(/\D/g, ''))}
-                          className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#F57D0D]/30 focus:border-[#F57D0D]"
+                          className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#006653]/30 focus:border-[#006653]"
                         />
                       </div>
 
@@ -776,7 +776,7 @@ export default function RestaurantDetail({
                         disabled={
                           reserving || !guestName.trim() || !phone.trim()
                         }
-                        className="w-full py-3 bg-[#F57D0D] hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-colors">
+                        className="w-full py-3 bg-[#006653] hover:bg-[#00543f] disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-colors">
                         {reserving ? 'Booking…' : 'Book a Table'}
                       </button>
                     </div>
@@ -805,7 +805,7 @@ export default function RestaurantDetail({
                         href={restaurant.map_link}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="hover:text-[#CD7F4E] underline underline-offset-2 transition-colors">
+                        className="hover:text-[#006653] underline underline-offset-2 transition-colors">
                         {restaurant.address}
                       </a>
                     ) : (
@@ -831,9 +831,9 @@ export default function RestaurantDetail({
 
               {distance !== null && (
                 <div className="flex gap-2 items-start mt-2">
-                  <Navigation2 className="h-4 w-4 text-[#CD7F4E] flex-shrink-0 mt-0.5" />
+                  <Navigation2 className="h-4 w-4 text-[#006653] flex-shrink-0 mt-0.5" />
                   <div className="text-sm">
-                    <span className="font-semibold text-[#CD7F4E]">
+                    <span className="font-semibold text-[#006653]">
                       {distance < 1
                         ? `${Math.round(distance * 1000)} m`
                         : `${distance.toFixed(1)} km`}
@@ -1025,7 +1025,7 @@ export default function RestaurantDetail({
               <button
                 onClick={handleFeedbackSubmit}
                 disabled={feedbackSubmitting || !feedbackName.trim() || !feedbackSurname.trim()}
-                className="w-full py-3 bg-[#F57D0D] hover:bg-orange-600 disabled:opacity-60 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-colors">
+                className="w-full py-3 bg-[#006653] hover:bg-[#00543f] disabled:opacity-60 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-colors">
                 {feedbackSubmitting ? 'Submitting...' : 'Submit Feedback'}
               </button>
               {(!feedbackName.trim() || !feedbackSurname.trim()) && (

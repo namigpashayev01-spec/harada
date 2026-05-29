@@ -96,7 +96,7 @@ export default function SettingsForm() {
   if (isInitializing) {
     return (
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-12 flex items-center justify-center">
-        <Loader2 className="w-6 h-6 animate-spin text-[#F57D0D]" />
+        <Loader2 className="w-6 h-6 animate-spin text-[#006653]" />
       </div>
     );
   }
@@ -158,7 +158,7 @@ export default function SettingsForm() {
               type="button"
               variant="outline"
               onClick={handleSelectFile}
-              className="border-[#F57D0D] text-[#f57d0db9] hover:text-[#f57d0db9] h-10"
+              className="border-[#006653] text-[#00543f] hover:text-[#00543f] h-10"
             >
               Edit
             </Button>
@@ -198,7 +198,7 @@ export default function SettingsForm() {
           <Button
             onClick={handleSave}
             disabled={saving}
-            className="h-10 px-6 rounded-[12px] bg-[#F57D0D] hover:bg-[#f57d0db9] text-white w-full sm:w-auto"
+            className="h-10 px-6 rounded-[12px] bg-[#006653] hover:bg-[#00543f] text-white w-full sm:w-auto"
           >
             {saving ? "Saving…" : "Save"}
             <Check className="w-4 h-4 mr-2" />

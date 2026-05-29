@@ -66,7 +66,7 @@ const BlogSlider = ({ lang }: BlogSliderProps) => {
           onMouseEnter={() => setIsPaused(true)}
           onMouseLeave={() => setIsPaused(false)}>
           <div className="lg:col-span-4">
-            <div className="h-full bg-[#1C5858] flex-col justify-between rounded-tl-[8px] lg:rounded-bl-[8px] lg:rounded-tr-none rounded-tr-[8px] text-white pl-[20px] md:pl-[40px] pr-[30px] md:pr-[60px] py-[20px] md:py-[45px] flex items-center">
+            <div className="h-full bg-[#006653] flex-col justify-between rounded-tl-[8px] lg:rounded-bl-[8px] lg:rounded-tr-none rounded-tr-[8px] text-white pl-[20px] md:pl-[40px] pr-[30px] md:pr-[60px] py-[20px] md:py-[45px] flex items-center">
               <div className="flex flex-col gap-[17px]">
                 <h3 className="text-[24px] md:text-[30px] lg:text-[34px] font-semibold leading-tight">
                   {current.title}
@@ -96,7 +96,7 @@ const BlogSlider = ({ lang }: BlogSliderProps) => {
                 {current.title}
               </h2>
               <Link href={href}>
-                <Button className="bg-[#F57D0D] px-[65px] cursor-pointer h-[49px] hover:bg-orange-600 text-white py-[15px] text-[14px] rounded-md transition-colors">
+                <Button className="bg-[#006653] px-[65px] cursor-pointer h-[49px] hover:bg-[#00543f] text-white py-[15px] text-[14px] rounded-md transition-colors">
                   Read More
                 </Button>
               </Link>
