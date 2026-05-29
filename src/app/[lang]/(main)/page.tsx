@@ -1,4 +1,5 @@
 import Header from '@/components/Header';
+import MobileStickySearch from '@/components/layout/MobileStickySearch';
 import BlogList from '@/components/Home/BlogList';
 import Categories from '@/components/Home/Categories';
 import PopularPlaces from '@/components/Home/PopularPlaces';
@@ -14,6 +15,7 @@ export default async function Home({ params }: HomeProps) {
 
   return (
     <>
+      <MobileStickySearch />
       <Header lang={lang} />
       <Categories />
       <PopularPlaces lang={lang} />
