@@ -7,6 +7,47 @@ import DashboardHeader from "@/components/Dashboard/DashboardHeader";
 import RestaurantCard from "@/components/Dashboard/RestaurantCard";
 import userService, { FavoriteRestaurant } from "@/services/user.service";
 
+const DICT: Record<
+  string,
+  {
+    title: string;
+    searchPh: string;
+    loadErr: string;
+    emptyNone: string;
+    emptySearch: string;
+    remove: string;
+    viewMenu: string;
+  }
+> = {
+  az: {
+    title: "Saxlanmış restoranlar",
+    searchPh: "Restoran və mətbəx axtar...",
+    loadErr: "Sevimlilər yüklənə bilmədi. Yenidən cəhd edin.",
+    emptyNone: "Hələ heç bir restoran saxlamamısınız.",
+    emptySearch: "Axtarışınıza uyğun sevimli tapılmadı.",
+    remove: "Sil",
+    viewMenu: "Menyuya bax",
+  },
+  en: {
+    title: "Saved Restaurants",
+    searchPh: "Search restaurant and cuisines...",
+    loadErr: "Could not load your favorites. Please try again.",
+    emptyNone: "You haven't saved any restaurants yet.",
+    emptySearch: "No favorites match your search.",
+    remove: "Remove",
+    viewMenu: "View menu",
+  },
+  ru: {
+    title: "Сохранённые рестораны",
+    searchPh: "Поиск ресторанов и кухонь...",
+    loadErr: "Не удалось загрузить избранное. Попробуйте снова.",
+    emptyNone: "Вы ещё не сохранили ни одного ресторана.",
+    emptySearch: "Ничего не найдено по вашему запросу.",
+    remove: "Удалить",
+    viewMenu: "Открыть меню",
+  },
+};
+
 const resolveSlug = (fav: FavoriteRestaurant, lang: string): string => {
   const s = fav.slug;
   if (!s) return String(fav.id);
@@ -22,6 +63,7 @@ const resolveSlug = (fav: FavoriteRestaurant, lang: string): string => {
 export default function FavoritesPage() {
   const queryClient = useQueryClient();
   const { lang } = useParams<{ lang: string }>();
+  const t = DICT[lang] ?? DICT.az;
   const [search, setSearch] = useState("");
 
   const { data, isLoading, isError } = useQuery({
@@ -78,8 +120,8 @@ export default function FavoritesPage() {
   return (
     <div>
       <DashboardHeader
-        title="Saved Restaurants"
-        searchPlaceholder="Search restaurant and cuisines..."
+        title={t.title}
+        searchPlaceholder={t.searchPh}
         onSearch={setSearch}
       />
 
@@ -89,15 +131,15 @@ export default function FavoritesPage() {
         </div>
       ) : isError ? (
         <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
-          Could not load your favorites. Please try again.
+          {t.loadErr}
         </p>
       ) : filtered.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 text-gray-500">
-          <Heart className="h-10 w-10 mb-2 text-gray-300" />
+          <span className="flex h-16 w-16 items-center justify-center rounded-full bg-[#eefae1] mb-3">
+            <Heart className="h-7 w-7 text-[#006653]" />
+          </span>
           <p className="text-sm">
-            {favorites.length === 0
-              ? "You haven't saved any restaurants yet."
-              : "No favorites match your search."}
+            {favorites.length === 0 ? t.emptyNone : t.emptySearch}
           </p>
         </div>
       ) : (
@@ -112,6 +154,8 @@ export default function FavoritesPage() {
               image={restaurant.image}
               href={`/${lang || "en"}/places/${resolveSlug(restaurant, lang || "en")}`}
               onRemove={() => removeMutation.mutate(restaurant.id)}
+              removeLabel={t.remove}
+              menuLabel={t.viewMenu}
             />
           ))}
         </div>

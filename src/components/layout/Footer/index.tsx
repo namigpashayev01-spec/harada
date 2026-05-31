@@ -26,9 +26,11 @@ const Footer = async ({ lang = 'az', footerLogo }: { lang?: string; footerLogo?:
               <h2 className="text-white text-2xl lg:text-3xl font-semibold">
                 Başlayaq
               </h2>
-              <button className="bg-[#9fe870] cursor-pointer hover:bg-[#8fdc5c] text-[#14532d] px-6 py-3 rounded-lg font-semibold transition-colors">
+              <Link
+                href={`/${lang}/restaurant-register`}
+                className="bg-[#9fe870] cursor-pointer hover:bg-[#8fdc5c] text-[#14532d] px-6 py-3 rounded-lg font-semibold transition-colors">
                 Restoranımı qeydiyyatdan keçir
-              </button>
+              </Link>
 
               {/* App download buttons */}
               <div className="flex flex-col sm:flex-row gap-3 pt-1">

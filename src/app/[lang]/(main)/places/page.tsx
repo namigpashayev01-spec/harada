@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { Map as MapIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import SearchBarHeader from '@/components/Header/SearchBarHeader';
+import MobileStickySearch from '@/components/layout/MobileStickySearch';
 import FilterBar from '@/components/Places/FilterBar';
 import CategoryScroller from '@/components/Places/CategoryScroller';
 import RestaurantCard from '@/components/Places/RestaurantCard';
@@ -226,20 +227,23 @@ function PlacesContent() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Banner */}
-      <div className="relative bg-[#006653] pt-8 pb-12 px-4">
-        <div className="absolute inset-0 overflow-hidden opacity-40">
-          <Image
-            src={PlaceBanner}
-            alt="Food banner"
-            className="w-full h-full object-cover"
-            fill
-          />
+      <MobileStickySearch />
+
+      <div>
+        {/* Banner */}
+        <div className="relative bg-[#006653] pt-8 pb-12 px-4">
+          <div className="absolute inset-0 overflow-hidden opacity-40">
+            <Image
+              src={PlaceBanner}
+              alt="Food banner"
+              className="w-full h-full object-cover"
+              fill
+            />
+          </div>
+          <div className="relative max-w-4xl mx-auto">
+            <SearchBarHeader />
+          </div>
         </div>
-        <div className="relative max-w-4xl mx-auto">
-          <SearchBarHeader />
-        </div>
-      </div>
 
       {/* Category filter */}
       {categories.length > 0 && (
@@ -267,6 +271,7 @@ function PlacesContent() {
             onClearCategory={() => handleCategorySelect(null)}
           />
         </div>
+      </div>
       </div>
 
       {/* Main content */}

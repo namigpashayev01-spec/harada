@@ -1,13 +1,47 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Star, MessageSquare } from 'lucide-react';
+import { Star, MessageSquare, PenLine } from 'lucide-react';
 import feedbackService, { FeedbackListResponse } from '@/services/feedback.service';
 
 interface FeedbackListProps {
   slug: string;
   refreshKey?: number;
+  lang?: string;
+  onWriteReview?: () => void;
 }
+
+interface FbDict {
+  reviews: string;
+  noReviews: string;
+  basedOn: (n: number) => string;
+  loadMore: (n: number) => string;
+  writeReview: string;
+}
+
+const FB_DICT: Record<string, FbDict> = {
+  az: {
+    reviews: 'Rəylər',
+    noReviews: 'Hələ rəy yoxdur. İlk rəyi siz yazın.',
+    basedOn: (n) => `${n} rəy əsasında`,
+    loadMore: (n) => `Daha çox (${n} qalıb)`,
+    writeReview: 'Rəy bildir',
+  },
+  en: {
+    reviews: 'Reviews',
+    noReviews: 'No reviews yet. Be the first to leave feedback.',
+    basedOn: (n) => `Based on ${n} ${n === 1 ? 'review' : 'reviews'}`,
+    loadMore: (n) => `Load more (${n} remaining)`,
+    writeReview: 'Write a review',
+  },
+  ru: {
+    reviews: 'Отзывы',
+    noReviews: 'Отзывов пока нет. Оставьте первый отзыв.',
+    basedOn: (n) => `На основе ${n} отзывов`,
+    loadMore: (n) => `Показать ещё (осталось ${n})`,
+    writeReview: 'Оставить отзыв',
+  },
+};
 
 const RATE_ORDER = [5, 4, 3, 2, 1];
 
@@ -28,10 +62,16 @@ const Stars = ({ value, size = 16 }: { value: number; size?: number }) => (
 
 const PAGE_SIZE = 5;
 
-export default function FeedbackList({ slug, refreshKey = 0 }: FeedbackListProps) {
+export default function FeedbackList({
+  slug,
+  refreshKey = 0,
+  lang = 'az',
+  onWriteReview,
+}: FeedbackListProps) {
   const [data, setData] = useState<FeedbackListResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [visible, setVisible] = useState(PAGE_SIZE);
+  const t = FB_DICT[lang] ?? FB_DICT.az;
 
   useEffect(() => {
     let cancelled = false;
@@ -47,7 +87,7 @@ export default function FeedbackList({ slug, refreshKey = 0 }: FeedbackListProps
 
   if (loading) {
     return (
-      <div className="bg-white rounded-lg p-6">
+      <div className="bg-white rounded-2xl p-6 shadow-sm">
         <div className="h-6 w-40 bg-gray-100 rounded animate-pulse mb-4" />
         <div className="h-24 bg-gray-100 rounded animate-pulse" />
       </div>
@@ -56,11 +96,19 @@ export default function FeedbackList({ slug, refreshKey = 0 }: FeedbackListProps
 
   if (!data || data.statistics.total_feedbacks === 0) {
     return (
-      <div className="bg-white rounded-lg p-6">
-        <h2 className="text-xl font-bold text-gray-900 mb-3">Reviews</h2>
+      <div className="bg-white rounded-2xl p-6 shadow-sm">
+        <h2 className="text-xl font-bold text-gray-900 mb-3">{t.reviews}</h2>
         <div className="flex flex-col items-center justify-center py-8 text-gray-500">
           <MessageSquare className="h-10 w-10 mb-2 text-gray-300" />
-          <p className="text-sm">No reviews yet. Be the first to leave feedback.</p>
+          <p className="text-sm mb-4">{t.noReviews}</p>
+          {onWriteReview && (
+            <button
+              onClick={onWriteReview}
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#006653] hover:bg-[#00543f] text-white text-sm font-medium transition-colors">
+              <PenLine className="h-4 w-4" />
+              {t.writeReview}
+            </button>
+          )}
         </div>
       </div>
     );
@@ -72,8 +120,18 @@ export default function FeedbackList({ slug, refreshKey = 0 }: FeedbackListProps
   const hasMore = visible < feedbacks.length;
 
   return (
-    <div className="bg-white rounded-lg p-6">
-      <h2 className="text-xl font-bold text-gray-900 mb-4">Reviews</h2>
+    <div className="bg-white rounded-2xl p-6 shadow-sm">
+      <div className="flex items-center justify-between gap-3 mb-4">
+        <h2 className="text-xl font-bold text-gray-900">{t.reviews}</h2>
+        {onWriteReview && (
+          <button
+            onClick={onWriteReview}
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full border border-[#006653] text-[#006653] text-sm font-medium hover:bg-[#006653] hover:text-white transition-colors whitespace-nowrap">
+            <PenLine className="h-4 w-4" />
+            {t.writeReview}
+          </button>
+        )}
+      </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-[auto_1fr] gap-6 pb-6 border-b border-gray-100">
         <div className="flex flex-col items-center justify-center sm:pr-6 sm:border-r sm:border-gray-100">
@@ -84,7 +142,7 @@ export default function FeedbackList({ slug, refreshKey = 0 }: FeedbackListProps
             <Stars value={Math.round(statistics.average_rate)} size={18} />
           </div>
           <span className="mt-2 text-xs text-gray-500">
-            Based on {statistics.total_feedbacks} {statistics.total_feedbacks === 1 ? 'review' : 'reviews'}
+            {t.basedOn(statistics.total_feedbacks)}
           </span>
         </div>
 
@@ -145,7 +203,7 @@ export default function FeedbackList({ slug, refreshKey = 0 }: FeedbackListProps
           <button
             onClick={() => setVisible((v) => v + PAGE_SIZE)}
             className="px-6 py-2 rounded-full border border-[#006653] text-[#006653] text-sm font-medium hover:bg-[#006653] hover:text-white transition-colors">
-            Load more ({feedbacks.length - visible} remaining)
+            {t.loadMore(feedbacks.length - visible)}
           </button>
         </div>
       )}

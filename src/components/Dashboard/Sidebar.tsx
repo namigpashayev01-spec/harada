@@ -20,14 +20,51 @@ interface SidebarProps {
   onClose?: () => void;
 }
 
+interface Dict {
+  settings: string;
+  reservations: string;
+  favorites: string;
+  reviews: string;
+  logout: string;
+  loggingOut: string;
+}
+
+const DICT: Record<string, Dict> = {
+  az: {
+    settings: 'Profil tənzimləmələri',
+    reservations: 'Rezervasiyalar',
+    favorites: 'Sevimlilər',
+    reviews: 'Rəylər',
+    logout: 'Çıxış',
+    loggingOut: 'Çıxılır…',
+  },
+  en: {
+    settings: 'Profile settings',
+    reservations: 'Reservations',
+    favorites: 'Favorites',
+    reviews: 'Reviews',
+    logout: 'Logout',
+    loggingOut: 'Logging out…',
+  },
+  ru: {
+    settings: 'Настройки профиля',
+    reservations: 'Бронирования',
+    favorites: 'Избранное',
+    reviews: 'Отзывы',
+    logout: 'Выход',
+    loggingOut: 'Выход…',
+  },
+};
+
 const menuItems = [
-  { id: 'settings', label: 'Profile settings', icon: Settings, href: '/dashboard/settings' },
-  { id: 'reservations', label: 'Reservations', icon: Calendar, href: '/dashboard/reservations' },
-  { id: 'favorites', label: 'Favorites', icon: Heart, href: '/dashboard/favorites' },
-  { id: 'reviews', label: 'Reviews', icon: MessageSquare, href: '/dashboard/reviews' },
+  { id: 'settings' as const, icon: Settings, href: '/dashboard/settings' },
+  { id: 'reservations' as const, icon: Calendar, href: '/dashboard/reservations' },
+  { id: 'favorites' as const, icon: Heart, href: '/dashboard/favorites' },
+  { id: 'reviews' as const, icon: MessageSquare, href: '/dashboard/reviews' },
 ];
 
 export default function Sidebar({ lang = 'en', open = false, onClose }: SidebarProps) {
+  const t = DICT[lang] ?? DICT.az;
   const pathname = usePathname();
   const [loggingOut, setLoggingOut] = useState(false);
   const { logout } = useAuth();
@@ -88,16 +125,23 @@ export default function Sidebar({ lang = 'en', open = false, onClose }: SidebarP
                   key={item.id}
                   href={`/${lang}${item.href}`}
                   className={cn(
-                    'flex items-center gap-3 px-4 py-3 rounded-lg transition-colors group',
-                    active ? 'bg-orange-500 text-white' : 'text-gray-700 hover:bg-gray-100',
+                    'relative flex items-center gap-3 px-4 py-3 rounded-xl transition-colors group',
+                    active
+                      ? 'bg-[#eefae1] text-[#006653] font-semibold'
+                      : 'text-gray-700 hover:bg-gray-50',
                   )}>
+                  {active && (
+                    <span className="absolute left-0 top-1/2 -translate-y-1/2 h-6 w-1 rounded-r-full bg-[#006653]" />
+                  )}
                   <Icon
                     className={cn(
                       'w-5 h-5',
-                      active ? 'text-white' : 'text-gray-700 group-hover:text-gray-900',
+                      active
+                        ? 'text-[#006653]'
+                        : 'text-gray-500 group-hover:text-gray-700',
                     )}
                   />
-                  <span className="text-sm font-medium">{item.label}</span>
+                  <span className="text-sm font-medium">{t[item.id]}</span>
                 </Link>
               );
             })}
@@ -116,7 +160,7 @@ export default function Sidebar({ lang = 'en', open = false, onClose }: SidebarP
               <LogOut className="w-5 h-5 text-gray-700" />
             )}
             <span className="text-sm font-medium">
-              {loggingOut ? 'Logging out…' : 'Logout'}
+              {loggingOut ? t.loggingOut : t.logout}
             </span>
           </button>
         </div>
