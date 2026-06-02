@@ -113,14 +113,16 @@ const minutesToHHMM = (mins: number) =>
 // Overall open→close span for a day, e.g. "08:00–23:00" (earliest start to
 // latest end across all meal periods). Returns "" when no valid times exist.
 const daySpan = (day: WorkingDay): string => {
-  const starts = day.meals
-    .map((m) => toMinutes(m.start_time))
-    .filter((n): n is number => n != null);
-  const ends = day.meals
-    .map((m) => toMinutes(m.end_time))
-    .filter((n): n is number => n != null);
-  if (!starts.length || !ends.length) return '';
-  return `${minutesToHHMM(Math.min(...starts))}–${minutesToHHMM(Math.max(...ends))}`;
+  const meals = day.meals
+    .map((m) => ({ s: toMinutes(m.start_time), e: toMinutes(m.end_time) }))
+    .filter((m): m is { s: number; e: number } => m.s != null && m.e != null)
+    .sort((a, b) => a.s - b.s);
+  if (!meals.length) return '';
+  // Open = earliest start; close = end of the latest-starting meal, which may
+  // wrap past midnight (e.g. dinner 15:00–02:00).
+  const open = meals[0].s;
+  const close = meals[meals.length - 1].e;
+  return `${minutesToHHMM(open)}–${minutesToHHMM(close)}`;
 };
 
 export default function OpeningHours({
@@ -192,7 +194,12 @@ export default function OpeningHours({
       const start = toMinutes(meal.start_time);
       const end = toMinutes(meal.end_time);
       if (start == null || end == null) continue;
-      if (nowMinutes >= start && nowMinutes <= end) {
+      // Overnight period (e.g. 16:00–02:00) wraps past midnight.
+      const openNow =
+        end < start
+          ? nowMinutes >= start || nowMinutes <= end
+          : nowMinutes >= start && nowMinutes <= end;
+      if (openNow) {
         isOpenNow = true;
         break;
       }

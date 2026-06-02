@@ -7,6 +7,19 @@ export interface Menu {
   images: string[];
 }
 
+export interface MenuDish {
+  id: number;
+  name: string;
+  description: string | null;
+  price: number | null;
+}
+
+export interface MenuCategory {
+  id: number;
+  name: string;
+  dishes: MenuDish[];
+}
+
 export interface Meal {
   type: string;
   name: string;
@@ -48,6 +61,7 @@ export interface Restaurant {
   // directly as sub_properties instead of nested under properties.
   sub_properties?: SubProperty[];
   menus: Menu[];
+  menu_categories?: MenuCategory[];
   galleries: Gallery[];
   latitude: string;
   longitude: string;

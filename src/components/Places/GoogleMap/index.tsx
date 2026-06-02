@@ -26,6 +26,10 @@ interface GoogleMapProps {
   userLocation?: { lat: number; lng: number } | null;
   focusedLocation?: { lat: number; lng: number } | null;
   onMarkerClick?: (location: MapLocation) => void;
+  /** Static preview: no gestures/controls, fixed zoom (for a single place). */
+  preview?: boolean;
+  /** When set, the whole map is a click target opening this URL (e.g. Google Maps). */
+  externalLink?: string;
 }
 
 export default function GoogleMap({
@@ -33,6 +37,8 @@ export default function GoogleMap({
   userLocation,
   focusedLocation,
   onMarkerClick,
+  preview = false,
+  externalLink,
 }: GoogleMapProps) {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -93,15 +99,19 @@ export default function GoogleMap({
     const center = userLocation ?? { lat: 40.3777, lng: 49.9807 };
     mapRef.current = new window.google.maps.Map(mapContainerRef.current, {
       center,
-      zoom: 12,
+      zoom: preview ? 15 : 12,
       mapTypeControl: false,
       streetViewControl: false,
       fullscreenControl: false,
+      // Preview maps are non-interactive (a click opens Google Maps instead).
+      gestureHandling: preview ? 'none' : 'auto',
+      disableDefaultUI: preview,
+      keyboardShortcuts: !preview,
       styles: [
         { featureType: 'poi', elementType: 'labels', stylers: [{ visibility: 'off' }] },
       ],
     });
-  }, [isLoaded, userLocation]);
+  }, [isLoaded, userLocation, preview]);
 
   // Update markers when locations change
   useEffect(() => {
@@ -214,7 +224,11 @@ export default function GoogleMap({
       hasPoints = true;
     });
 
-    if (hasPoints && locations.length > 0) {
+    if (locations.length === 1) {
+      // A single place: fitBounds would zoom to the max; use a readable zoom.
+      mapRef.current.setCenter({ lat: locations[0].lat, lng: locations[0].lng });
+      mapRef.current.setZoom(15);
+    } else if (hasPoints && locations.length > 0) {
       mapRef.current.fitBounds(bounds, { padding: 60 });
     }
   }, [locations, isLoaded, userLocation, onMarkerClick]);
@@ -229,6 +243,15 @@ export default function GoogleMap({
   return (
     <div className="relative w-full h-full">
       <div ref={mapContainerRef} className="w-full h-full rounded-lg" />
+      {externalLink && isLoaded && (
+        <a
+          href={externalLink}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="Google Maps-də aç"
+          className="absolute inset-0 z-[5] cursor-pointer"
+        />
+      )}
       {!isLoaded && (
         <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-100 rounded-lg gap-3">
           <div className="animate-spin rounded-full h-10 w-10 border-[3px] border-gray-200 border-t-[#006653]" />

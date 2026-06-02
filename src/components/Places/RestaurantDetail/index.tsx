@@ -956,6 +956,51 @@ export default function RestaurantDetail({
               </div>
             )}
 
+            {/* Structured menu (categories -> dishes + price) */}
+            {restaurant.menu_categories &&
+              restaurant.menu_categories.length > 0 && (
+                <div className="bg-white rounded-2xl p-6 shadow-sm">
+                  <div className="flex items-center gap-2.5 mb-5">
+                    <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#eefae1]">
+                      <UtensilsCrossed className="h-5 w-5 text-[#006653]" />
+                    </span>
+                    <h2 className="text-xl font-bold text-gray-900">{t.menu}</h2>
+                  </div>
+                  <div className="space-y-6">
+                    {restaurant.menu_categories.map((category) => (
+                      <div key={category.id}>
+                        <h3 className="text-base font-semibold text-[#006653] mb-2.5">
+                          {category.name}
+                        </h3>
+                        <ul className="divide-y divide-gray-100">
+                          {category.dishes.map((dish) => (
+                            <li
+                              key={dish.id}
+                              className="flex items-start justify-between gap-4 py-2">
+                              <div className="min-w-0">
+                                <span className="text-sm text-gray-800">
+                                  {dish.name}
+                                </span>
+                                {dish.description && (
+                                  <p className="text-xs text-gray-400 mt-0.5">
+                                    {dish.description}
+                                  </p>
+                                )}
+                              </div>
+                              {dish.price !== null && (
+                                <span className="shrink-0 text-sm font-semibold text-gray-900 whitespace-nowrap">
+                                  {dish.price} ₼
+                                </span>
+                              )}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
             {/* Menu */}
             {restaurant.menus.length > 0 && (
               <div className="bg-white rounded-2xl p-6 shadow-sm">
@@ -1162,6 +1207,11 @@ export default function RestaurantDetail({
                   <GoogleMap
                     locations={mapLocation}
                     userLocation={restaurantLocation}
+                    preview
+                    externalLink={
+                      restaurant.map_link ||
+                      `https://www.google.com/maps?q=${restaurant.latitude},${restaurant.longitude}`
+                    }
                   />
                 </div>
               </div>
