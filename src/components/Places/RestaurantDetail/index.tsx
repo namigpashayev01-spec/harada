@@ -17,7 +17,6 @@ import {
   Users,
   Phone,
   CheckCircle2,
-  Clock,
   Images,
   Sparkles,
   UtensilsCrossed,
@@ -30,6 +29,7 @@ import GoogleMap, { MapLocation } from '@/components/Places/GoogleMap';
 import reservationService from '@/services/reservation.service';
 import feedbackService, { Impression } from '@/services/feedback.service';
 import FeedbackList from './FeedbackList';
+import OpeningHours from './OpeningHours';
 import FavoriteButton from '@/components/common/FavoriteButton';
 import { useAuth } from '@/context/AuthContext';
 
@@ -848,11 +848,13 @@ export default function RestaurantDetail({
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-gray-700 mb-4 pt-4 border-t border-gray-100">
-                {restaurant.open_from && (
-                  <div className="flex items-center gap-2">
-                    <Clock className="h-5 w-5 text-gray-400 flex-shrink-0" />
-                    <span>{t.openFrom(restaurant.open_from)}</span>
-                  </div>
+                {(workingHours.length > 0 || restaurant.open_from) && (
+                  <OpeningHours
+                    workingHours={workingHours}
+                    openFrom={restaurant.open_from}
+                    lang={lang}
+                    variant="card"
+                  />
                 )}
                 {restaurant.address && (
                   <div className="flex items-center gap-2">
@@ -1199,11 +1201,13 @@ export default function RestaurantDetail({
                 {t.quickInfo}
               </h3>
               <div className="space-y-3 text-sm text-gray-700">
-                {restaurant.open_from && (
-                  <div className="flex gap-2">
-                    <Clock className="h-4 w-4 text-gray-400 flex-shrink-0 mt-0.5" />
-                    <span>{t.openFrom(restaurant.open_from)}</span>
-                  </div>
+                {(workingHours.length > 0 || restaurant.open_from) && (
+                  <OpeningHours
+                    workingHours={workingHours}
+                    openFrom={restaurant.open_from}
+                    lang={lang}
+                    variant="sidebar"
+                  />
                 )}
                 {restaurant.address && (
                   <div className="flex gap-2">

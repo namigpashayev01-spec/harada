@@ -37,7 +37,7 @@ const PlacesCategories = ({
   };
 
   return (
-    <div className="mb-8 overflow-hidden">
+    <div className="overflow-hidden py-2">
       <Swiper
         onBeforeInit={(swiper) => {
           swiperRef.current = swiper;
@@ -63,19 +63,24 @@ const PlacesCategories = ({
           <SwiperSlide key={category.id} className="!w-auto">
             <button
               onClick={(e) => handleCategoryClick(e, category.id)}
-              className={`whitespace-nowrap px-6 py-2.5 flex items-center gap-2 rounded-full font-semibold text-sm md:text-base transition-colors select-none ${
+              className={`group flex items-center gap-2 whitespace-nowrap rounded-full border px-4 py-2 text-sm font-medium transition-all select-none sm:px-5 sm:py-2.5 ${
                 activeCategoryId === category.id
-                  ? 'bg-[#006653] text-white'
-                  : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                  ? 'border-[#006653] bg-[#006653] text-white shadow-[0_4px_14px_rgba(0,102,83,0.25)]'
+                  : 'border-gray-200 bg-white text-gray-600 hover:border-[#006653]/50 hover:text-[#006653]'
               }`}>
               {category.icon && (category.icon.startsWith('http') || category.icon.startsWith('/')) && (
-                <Image
-                  src={category.icon}
-                  alt={category.title || 'Category'}
-                  width={16}
-                  height={16}
-                  className="object-contain pointer-events-none"
-                />
+                <span
+                  className={`flex h-5 w-5 shrink-0 items-center justify-center overflow-hidden rounded-full transition-colors ${
+                    activeCategoryId === category.id ? 'bg-white/20' : 'bg-gray-50'
+                  }`}>
+                  <Image
+                    src={category.icon}
+                    alt={category.title || 'Category'}
+                    width={14}
+                    height={14}
+                    className="object-contain pointer-events-none"
+                  />
+                </span>
               )}
               {category.title}
             </button>
