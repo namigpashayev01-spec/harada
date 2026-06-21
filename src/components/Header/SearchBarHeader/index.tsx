@@ -1,9 +1,21 @@
 'use client';
 import { useState, useEffect, useRef } from 'react';
-import { Search, MapPin } from 'lucide-react';
+import Image from 'next/image';
+import { Search, MapPin, Utensils, Loader2 } from 'lucide-react';
 import { useRouter, usePathname } from 'next/navigation';
 import { Input } from '@/components/ui/input';
 import HeroFilter, { FilterSelection } from './HeroFilter';
+import placeService from '@/services/place.service';
+import { NearbyRestaurant } from '@/types/restaurant';
+
+// Wide bounding box covering all of Azerbaijan, so name suggestions are
+// not limited to a small radius while the user is still typing.
+const AZ_BBOX = {
+  ne_lat: 41.95,
+  ne_lng: 50.7,
+  sw_lat: 38.3,
+  sw_lng: 44.7,
+};
 
 declare global {
   interface Window {
@@ -64,9 +76,71 @@ const SearchBarHeader = ({ compact = false }: { compact?: boolean }) => {
   const lang = pathname.split('/')[1] || 'en';
   const langRef = useRef(lang);
 
+  // Live name suggestions for the search input.
+  const [suggestions, setSuggestions] = useState<NearbyRestaurant[]>([]);
+  const [showSuggest, setShowSuggest] = useState(false);
+  const [loadingSuggest, setLoadingSuggest] = useState(false);
+  const searchBoxRef = useRef<HTMLDivElement>(null);
+
+  const suggestionSlug = (r: NearbyRestaurant) =>
+    r.slug.az || r.slug.en || r.slug.ru || String(r.id);
+
+  const goToRestaurant = (r: NearbyRestaurant) => {
+    setShowSuggest(false);
+    setSearch(r.title);
+    router.push(`/${lang}/places/${suggestionSlug(r)}`);
+  };
+
   useEffect(() => { searchRef.current = search; }, [search]);
   useEffect(() => { langRef.current = lang; }, [lang]);
   useEffect(() => { filtersRef.current = filters; }, [filters]);
+
+  // Debounced live suggestions: fetch matching restaurants/foods as the user
+  // types in the search box (uses a wide Azerbaijan-wide bbox so results are
+  // not limited by the user's current location).
+  useEffect(() => {
+    const term = search.trim();
+    if (term.length < 2) {
+      setSuggestions([]);
+      setLoadingSuggest(false);
+      return;
+    }
+    let cancelled = false;
+    setLoadingSuggest(true);
+    const t = setTimeout(async () => {
+      try {
+        const res = await placeService.getNearbyRestaurants({
+          ...AZ_BBOX,
+          search: term,
+          page: 1,
+          per_page: 6,
+        });
+        if (!cancelled) {
+          setSuggestions(res.data ?? []);
+          setShowSuggest(true);
+        }
+      } catch {
+        if (!cancelled) setSuggestions([]);
+      } finally {
+        if (!cancelled) setLoadingSuggest(false);
+      }
+    }, 300);
+    return () => {
+      cancelled = true;
+      clearTimeout(t);
+    };
+  }, [search]);
+
+  // Close the suggestions dropdown when clicking outside the search box.
+  useEffect(() => {
+    const onClick = (e: MouseEvent) => {
+      if (searchBoxRef.current && !searchBoxRef.current.contains(e.target as Node)) {
+        setShowSuggest(false);
+      }
+    };
+    document.addEventListener('mousedown', onClick);
+    return () => document.removeEventListener('mousedown', onClick);
+  }, []);
 
   // Append the selected property filters to a places URL query.
   const appendFilters = (params: URLSearchParams, f: FilterSelection) => {
@@ -228,16 +302,69 @@ const SearchBarHeader = ({ compact = false }: { compact?: boolean }) => {
         <div className="hidden sm:block self-center h-8 w-px bg-gray-200 flex-shrink-0" />
 
         {/* Search input */}
-        <div className="flex-1 relative min-w-0">
+        <div ref={searchBoxRef} className="flex-1 relative min-w-0">
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 z-10" />
           <Input
             type="text"
             placeholder="Mətbəx, restoran adı..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && submit()}
+            onFocus={() => { if (suggestions.length) setShowSuggest(true); }}
+            onKeyDown={(e) => { if (e.key === 'Enter') { setShowSuggest(false); submit(); } }}
             className={`pl-11 border-0 bg-gray-50 sm:bg-transparent focus:bg-gray-50 placeholder:text-[#969696] shadow-none ${fieldH} focus-visible:ring-0 focus-visible:ring-offset-0 rounded-xl w-full text-black`}
           />
+
+          {/* Live suggestions dropdown */}
+          {showSuggest && search.trim().length >= 2 && (
+            <div className="absolute left-0 right-0 top-full mt-2 z-50 bg-white rounded-xl border border-gray-100 shadow-[0_18px_50px_rgba(0,0,0,0.18)] overflow-hidden">
+              {loadingSuggest && suggestions.length === 0 ? (
+                <div className="flex items-center gap-2 px-4 py-3 text-sm text-gray-500">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Axtarılır…
+                </div>
+              ) : suggestions.length === 0 ? (
+                <div className="px-4 py-3 text-sm text-gray-500">
+                  Nəticə tapılmadı
+                </div>
+              ) : (
+                <ul className="max-h-80 overflow-y-auto py-1">
+                  {suggestions.map((r) => (
+                    <li key={r.id}>
+                      <button
+                        type="button"
+                        onMouseDown={(e) => e.preventDefault()}
+                        onClick={() => goToRestaurant(r)}
+                        className="flex w-full items-center gap-3 px-3 py-2.5 text-left transition-colors hover:bg-gray-50">
+                        {r.image ? (
+                          <Image
+                            src={r.image}
+                            alt={r.title}
+                            width={40}
+                            height={40}
+                            className="h-10 w-10 flex-shrink-0 rounded-lg object-cover"
+                          />
+                        ) : (
+                          <span className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-gray-100 text-gray-400">
+                            <Utensils className="h-5 w-5" />
+                          </span>
+                        )}
+                        <span className="min-w-0">
+                          <span className="block truncate text-sm font-medium text-gray-900">
+                            {r.title}
+                          </span>
+                          {r.address && (
+                            <span className="block truncate text-xs text-gray-500">
+                              {r.address}
+                            </span>
+                          )}
+                        </span>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Filter */}

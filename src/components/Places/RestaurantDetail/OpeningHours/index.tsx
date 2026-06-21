@@ -4,6 +4,57 @@ import { useEffect, useRef, useState } from 'react';
 import { Clock, ChevronDown } from 'lucide-react';
 import { WorkingDay } from '@/types/restaurant';
 
+// "bazar ertəsi: 09:00–03:00 | çərşənbə axşamı: 09:00–03:00 | ..."
+// formatındakı open_from string-ini WorkingDay[] massivine çevirir
+function parseOpenFrom(str: string): WorkingDay[] {
+  const AZ_DAY_MAP: Record<string, string> = {
+    'bazar ertəsi': 'monday',
+    'bazar ertesi': 'monday',
+    'çərşənbə axşamı': 'tuesday',
+    'cersенbе axsami': 'tuesday',
+    'çərşənbə': 'wednesday',
+    'cuma axsami': 'thursday',
+    'cümə axşamı': 'thursday',
+    'cümə': 'friday',
+    'cume': 'friday',
+    'şənbə': 'saturday',
+    'senbe': 'saturday',
+    'bazar': 'sunday',
+  };
+
+  const EN_DAY_MAP: Record<string, string> = {
+    'monday': 'monday', 'tuesday': 'tuesday', 'wednesday': 'wednesday',
+    'thursday': 'thursday', 'friday': 'friday', 'saturday': 'saturday', 'sunday': 'sunday',
+  };
+
+  const segments = str.split('|').map(s => s.trim()).filter(Boolean);
+  const days: WorkingDay[] = [];
+
+  for (const seg of segments) {
+    const colonIdx = seg.indexOf(':');
+    if (colonIdx === -1) continue;
+
+    const rawDay = seg.slice(0, colonIdx).trim().toLowerCase();
+    const timeStr = seg.slice(colonIdx + 1).trim();
+
+    const dayKey = AZ_DAY_MAP[rawDay] ?? EN_DAY_MAP[rawDay];
+    if (!dayKey) continue;
+
+    // "09:00–03:00" → start/end
+    const timeMatch = timeStr.match(/(\d{1,2}:\d{2})\s*[–\-]\s*(\d{1,2}:\d{2})/);
+    if (!timeMatch) continue;
+
+    days.push({
+      day: dayKey as WorkingDay['day'],
+      day_name: rawDay,
+      is_open: true,
+      meals: [{ start_time: timeMatch[1], end_time: timeMatch[2] }],
+    });
+  }
+
+  return days;
+}
+
 interface OpeningHoursProps {
   workingHours: WorkingDay[];
   /** Fallback opening time when no structured working_hours are available. */
@@ -135,6 +186,10 @@ export default function OpeningHours({
   const [open, setOpen] = useState(false);
   const wrapRef = useRef<HTMLDivElement>(null);
 
+  // open_from string varsa parse et və workingHours ilə birləşdir
+  const parsedFromStr = openFrom ? parseOpenFrom(openFrom) : [];
+  const effectiveHours = workingHours.length > 0 ? workingHours : parsedFromStr;
+
   // Close the popover on outside click / Escape.
   useEffect(() => {
     if (!open) return;
@@ -154,29 +209,12 @@ export default function OpeningHours({
     };
   }, [open]);
 
-  // No structured schedule → fall back to the plain "open from" text.
-  if (!workingHours.length) {
-    if (!openFrom) return null;
-    return (
-      <div
-        className={
-          variant === 'sidebar'
-            ? 'flex gap-2 text-sm text-gray-700'
-            : 'flex items-center gap-2 text-gray-700'
-        }>
-        <Clock
-          className={
-            variant === 'sidebar'
-              ? 'h-4 w-4 text-gray-400 flex-shrink-0 mt-0.5'
-              : 'h-5 w-5 text-gray-400 flex-shrink-0'
-          }
-        />
-        <span>{t.fallbackOpenFrom(openFrom)}</span>
-      </div>
-    );
+  // Nə structured schedule, nə də parseable open_from yoxdur
+  if (!effectiveHours.length) {
+    return null;
   }
 
-  const byDay = new Map(workingHours.map((d) => [d.day, d]));
+  const byDay = new Map(effectiveHours.map((d) => [d.day, d]));
   const orderedDays = WEEK_ORDER.map((d) => byDay.get(d)).filter(
     (d): d is WorkingDay => Boolean(d),
   );

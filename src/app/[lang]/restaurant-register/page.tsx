@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import { Check, Phone, Mail } from 'lucide-react';
 import RegisterHeader from '@/components/RestaurantRegister/RegisterHeader';
 import RestaurantRegisterForm from '@/components/RestaurantRegister/RestaurantRegisterForm';
@@ -7,9 +8,20 @@ import {
   SUPPORT_EMAIL,
 } from '@/components/RestaurantRegister/translations';
 import settingService from '@/services/setting.service';
+import { pageAlternates } from '@/lib/seo';
 
 interface PageProps {
   params: Promise<{ lang: string }>;
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { lang } = await params;
+  return {
+    title: { absolute: 'Restoranını qeydiyyatdan keçir | Harada Oturaq' },
+    description:
+      'Restoranını Harada Oturaq platformasına əlavə et, yeni müştərilərə çat və onlayn rezervasiya qəbul etməyə başla.',
+    alternates: pageAlternates(lang, '/restaurant-register'),
+  };
 }
 
 export default async function RestaurantRegisterPage({ params }: PageProps) {

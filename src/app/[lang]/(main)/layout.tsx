@@ -28,7 +28,7 @@ export default async function MainLayout({
         src={`https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&libraries=places`}
         strategy="afterInteractive"
       />
-      <main className="min-h-screen pt-[80px] pb-[60px] md:pb-0">
+      <main className="min-h-screen pt-0 md:pt-[76px] pb-[60px] md:pb-0">
         <Navbar logo={logo} />
         {children}
         <Footer lang={lang} footerLogo={footerLogo} />

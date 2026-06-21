@@ -7,7 +7,6 @@ import {
   ChevronLeft,
   ChevronRight,
   MapPin,
-  DollarSign,
   Star,
   Home,
   X,
@@ -274,6 +273,11 @@ function haversineKm(lat1: number, lon1: number, lat2: number, lon2: number) {
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
+// WhatsApp number that reservation requests are sent to. For now the same
+// number is used for every restaurant (no per-restaurant number in the API yet).
+// Digits only, international format without "+", as required by wa.me.
+const RESERVATION_WHATSAPP = '994773151580';
+
 export default function RestaurantDetail({
   restaurant,
   lang,
@@ -345,6 +349,27 @@ export default function RestaurantDetail({
     if (!selectedDate || !selectedTime || !guestName || !phone) return;
     setReserving(true);
     setReservationError('');
+
+    // Build the reservation message (date, meal time, hour, guest details)
+    // and open the restaurant's WhatsApp chat with it pre-filled.
+    const mealLabel = currentMeal?.name ?? selectedMeal ?? '';
+    const message = [
+      `🍽 ${restaurant.title} — yeni masa rezervasiyası`,
+      `📅 Tarix: ${formatDate(selectedDate)}`,
+      `🕒 Yemək vaxtı: ${mealLabel}`,
+      `⏰ Saat: ${selectedTime}`,
+      `👥 Qonaq sayı: ${guestCount}`,
+      `🙍 Ad: ${guestName}`,
+      `📞 Telefon: ${phone}`,
+    ].join('\n');
+    // Opened synchronously within the click handler to avoid pop-up blocking.
+    window.open(
+      `https://wa.me/${RESERVATION_WHATSAPP}?text=${encodeURIComponent(message)}`,
+      '_blank',
+    );
+
+    // Best-effort: also record the reservation in the backend so it appears in
+    // the admin panel. A failure here must not block the WhatsApp flow.
     try {
       await reservationService.create({
         restoran_id: restaurant.id,
@@ -355,11 +380,11 @@ export default function RestaurantDetail({
         guest_names: guestName,
         phone,
       });
-      setReservationDone(true);
     } catch {
-      setReservationError(t.reservationError);
+      // ignore — WhatsApp is the primary channel for now
     } finally {
       setReserving(false);
+      setReservationDone(true);
     }
   };
 
@@ -872,12 +897,6 @@ export default function RestaurantDetail({
                     )}
                   </div>
                 )}
-                {restaurant.average_price && (
-                  <div className="flex items-center gap-2">
-                    <DollarSign className="h-5 w-5 text-gray-400 flex-shrink-0" />
-                    <span>{t.averagePriceInline(restaurant.average_price)}</span>
-                  </div>
-                )}
               </div>
 
               {/* Categories */}
@@ -1275,12 +1294,6 @@ export default function RestaurantDetail({
                     )}
                   </div>
                 )}
-                {restaurant.average_price && (
-                  <div className="flex gap-2">
-                    <DollarSign className="h-4 w-4 text-gray-400 flex-shrink-0 mt-0.5" />
-                    <span>{t.averagePriceLabel(restaurant.average_price)}</span>
-                  </div>
-                )}
                 {restaurant.categories.length > 0 && (
                   <div className="flex gap-2">
                     <Star className="h-4 w-4 text-gray-400 flex-shrink-0 mt-0.5" />
@@ -1324,11 +1337,6 @@ export default function RestaurantDetail({
             <p className="font-semibold text-gray-900 truncate">
               {restaurant.title}
             </p>
-            {restaurant.average_price && (
-              <p className="text-xs text-gray-500 truncate">
-                {t.averagePriceLabel(restaurant.average_price)}
-              </p>
-            )}
           </div>
           <button
             onClick={() => setMobileReserveOpen(true)}

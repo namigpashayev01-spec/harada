@@ -103,11 +103,6 @@ const RestaurantCard = ({ place, lang, topBadge }: RestaurantCardProps) => {
         <div className="mt-3 flex items-center gap-1.5 text-sm text-gray-500">
           <MapPin className="h-4 w-4 shrink-0 text-gray-400" />
           <span className="line-clamp-1">{district}</span>
-          {place.average_price && (
-            <span className="ml-auto shrink-0 font-medium text-gray-700">
-              ~{place.average_price} AZN
-            </span>
-          )}
         </div>
 
         {typeof place.discount === 'number' && place.discount > 0 && (

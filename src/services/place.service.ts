@@ -14,6 +14,8 @@ interface NearbyRestaurantsParams {
   properties?: number[];
   subproperties?: number[];
   is_special_offer?: boolean;
+  page?: number;
+  per_page?: number;
 }
 
 const placeService = {
@@ -42,6 +44,8 @@ const placeService = {
       body.append('subproperties[]', String(id)),
     );
     if (params.is_special_offer) body.append('is_special_offer', '1');
+    if (params.page != null) body.append('page', String(params.page));
+    if (params.per_page != null) body.append('per_page', String(params.per_page));
 
     console.log('[SearchArea] 🌐 POST /nearby-restaurants — body:', body.toString());
 

@@ -111,11 +111,6 @@ export default function RestaurantCard({ restaurant }: RestaurantCardProps) {
         )}
 
         <div className="mt-1.5 flex items-center gap-3 text-sm text-gray-600">
-          {restaurant.average_price && (
-            <span className="font-medium text-gray-700">
-              ~{restaurant.average_price} AZN
-            </span>
-          )}
           {restaurant.distance != null && (
             <span className="flex items-center gap-1 text-gray-500">
               <Navigation className="h-3.5 w-3.5 text-gray-400" />

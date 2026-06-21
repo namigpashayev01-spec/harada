@@ -5,6 +5,11 @@ const nextConfig: NextConfig = {
   // and tsc/eslint OOM-kill the build. Catch type/lint errors in dev/CI instead.
   eslint: { ignoreDuringBuilds: true },
   typescript: { ignoreBuildErrors: true },
+  // Force blocking (in-<head>) metadata for ALL user agents instead of
+  // streaming it into the <body>. Required so Google Search Console (and any
+  // crawler that doesn't execute JS) finds the verification meta tag and the
+  // SEO tags inside <head>.
+  htmlLimitedBots: /.*/,
   images: {
     remotePatterns: [
       {

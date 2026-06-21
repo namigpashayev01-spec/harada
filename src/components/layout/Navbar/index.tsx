@@ -53,21 +53,23 @@ export default function Navbar({ logo }: NavbarProps) {
   return (
     <header
       className={cn(
-        'fixed top-0 left-0 right-0 z-100 transition-all duration-300 ease-in-out bg-white border-b border-gray-200',
+        // Hidden on mobile (logo bar removed); mobile search/nav handled by
+        // MobileStickySearch + MobileBottomNav. Shown from md upwards.
+        'hidden md:block fixed top-0 left-0 right-0 z-100 transition-all duration-300 ease-in-out bg-white border-b border-gray-200',
         visible ? 'translate-y-0' : '-translate-y-full',
         isScrolled ? 'shadow-md' : '',
       )}>
-      <div className="px-[10px] xl:px-[72px] lg:px-[42px] mx-auto py-[20px]">
+      <div className="px-[10px] xl:px-[72px] lg:px-[42px] mx-auto py-[10px]">
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-[36px]">
             <Link href={`/${urlLang}`} className="flex-shrink-0">
-              <div className="w-[72px]">
+              <div className="w-[56px]">
                 <Image
                   alt="Logo"
                   className="w-full h-full object-cover"
                   src={logo || LogoImg}
-                  width={72}
-                  height={72}
+                  width={56}
+                  height={56}
                   priority
                 />
               </div>

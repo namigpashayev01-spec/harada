@@ -50,8 +50,13 @@ function PlacesContent() {
   const urlFiltersKey = JSON.stringify(urlFilters);
 
   const [restaurants, setRestaurants] = useState<NearbyRestaurant[]>([]);
+  const [total, setTotal] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(false);
   const [locationError, setLocationError] = useState(false);
+  const sentinelRef = useRef<HTMLDivElement>(null);
   const [showMobileMap, setShowMobileMap] = useState(false);
   const [selectedSlug, setSelectedSlug] = useState<string | null>(null);
   const [focusedLocation, setFocusedLocation] = useState<{ lat: number; lng: number } | null>(null);
@@ -64,11 +69,38 @@ function PlacesContent() {
 
   const userLocationRef = useRef<{ lat: number; lng: number } | null>(null);
   const propFiltersRef = useRef<{ properties: number[]; subproperties: number[]; is_special_offer: boolean }>(urlFilters);
+  const fetchNextPageRef = useRef<() => void>(() => {});
   const lastUrlFiltersKey = useRef(urlFiltersKey);
 
   useEffect(() => {
     categoriesService.getCategories().then((res) => setCategories(res.data)).catch(() => {});
   }, []);
+
+  const buildRequestParams = useCallback(
+    (
+      location: { lat: number; lng: number } | null,
+      currentSearch: string,
+      currentBbox: { ne_lat: number; ne_lng: number; sw_lat: number; sw_lng: number } | null,
+      filters: { properties: number[]; subproperties: number[]; is_special_offer: boolean },
+      categoryId: number | null,
+      currentPage: number,
+    ) => ({
+      latitude: !currentBbox && location ? location.lat : undefined,
+      longitude: !currentBbox && location ? location.lng : undefined,
+      ne_lat: currentBbox?.ne_lat,
+      ne_lng: currentBbox?.ne_lng,
+      sw_lat: currentBbox?.sw_lat,
+      sw_lng: currentBbox?.sw_lng,
+      search: currentSearch || undefined,
+      category_id: categoryId ? [categoryId] : undefined,
+      properties: filters.properties.length ? filters.properties : undefined,
+      subproperties: filters.subproperties.length ? filters.subproperties : undefined,
+      is_special_offer: filters.is_special_offer || undefined,
+      page: currentPage,
+      per_page: 12,
+    }),
+    [],
+  );
 
   const fetchRestaurants = useCallback(
     async (
@@ -78,42 +110,51 @@ function PlacesContent() {
       filters: { properties: number[]; subproperties: number[]; is_special_offer: boolean } = { properties: [], subproperties: [], is_special_offer: false },
       categoryId: number | null = null,
     ) => {
-      console.log('[SearchArea] 🔍 fetchRestaurants called with:', {
-        mode: currentBbox ? 'BBOX (area search)' : location ? 'GEOLOCATION (nearby)' : 'NO LOCATION',
-        currentBbox,
-        location,
-        search: currentSearch || '(empty)',
-        categoryId,
-        filters,
-      });
       setLoading(true);
-      const requestParams = {
-        latitude: !currentBbox && location ? location.lat : undefined,
-        longitude: !currentBbox && location ? location.lng : undefined,
-        ne_lat: currentBbox?.ne_lat,
-        ne_lng: currentBbox?.ne_lng,
-        sw_lat: currentBbox?.sw_lat,
-        sw_lng: currentBbox?.sw_lng,
-        search: currentSearch || undefined,
-        category_id: categoryId ? [categoryId] : undefined,
-        properties: filters.properties.length ? filters.properties : undefined,
-        subproperties: filters.subproperties.length ? filters.subproperties : undefined,
-        is_special_offer: filters.is_special_offer || undefined,
-      };
-      console.log('[SearchArea] 📡 Sending request to /nearby-restaurants with params:', requestParams);
+      setPage(1);
+      setHasMore(true);
       try {
-        const res = await placeService.getNearbyRestaurants(requestParams);
-        console.log(`[SearchArea] ✅ Got ${res.data?.length ?? 0} restaurants back:`, res.data);
+        const res = await placeService.getNearbyRestaurants(
+          buildRequestParams(location, currentSearch, currentBbox, filters, categoryId, 1),
+        );
         setRestaurants(res.data ?? []);
-      } catch (err) {
-        console.error('[SearchArea] ❌ Request failed:', err);
+        setTotal(res.meta?.total ?? null);
+        setHasMore((res.meta?.current_page ?? 1) < (res.meta?.last_page ?? 1));
+      } catch {
         setRestaurants([]);
+        setHasMore(false);
       } finally {
         setLoading(false);
       }
     },
-    [],
+    [buildRequestParams],
   );
+
+  const fetchNextPage = useCallback(async () => {
+    if (loadingMore || !hasMore) return;
+    const nextPage = page + 1;
+    setLoadingMore(true);
+    try {
+      const res = await placeService.getNearbyRestaurants(
+        buildRequestParams(
+          userLocationRef.current,
+          search,
+          bbox,
+          propFiltersRef.current,
+          activeCategoryId,
+          nextPage,
+        ),
+      );
+      setRestaurants((prev) => [...prev, ...(res.data ?? [])]);
+      setPage(nextPage);
+      setHasMore((res.meta?.current_page ?? nextPage) < (res.meta?.last_page ?? nextPage));
+    } catch {
+      // silent
+    } finally {
+      setLoadingMore(false);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loadingMore, hasMore, page, buildRequestParams, search, activeCategoryId]);
 
   useEffect(() => {
     // When the URL-borne filters change (e.g. arriving from the hero filter),
@@ -162,6 +203,34 @@ function PlacesContent() {
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [search, neLatParam, neLngParam, swLatParam, swLngParam, fetchRestaurants, activeCategoryId, urlFiltersKey]);
+
+  // Ref-i həmişə son fetchNextPage-ə yönləndir
+  useEffect(() => {
+    fetchNextPageRef.current = fetchNextPage;
+  }, [fetchNextPage]);
+
+  // Observer bir dəfə qurulur — sentinel həmişə DOM-dadır
+  useEffect(() => {
+    const sentinel = sentinelRef.current;
+    if (!sentinel) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) fetchNextPageRef.current();
+      },
+      { rootMargin: '400px', threshold: 0 },
+    );
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, []);
+
+  // hasMore ilk dəfə true olduqda (ilk yüklənmədən sonra) növbəti səhifəni başlat
+  const prevHasMore = useRef(false);
+  useEffect(() => {
+    if (hasMore && !prevHasMore.current) {
+      fetchNextPageRef.current();
+    }
+    prevHasMore.current = hasMore;
+  }, [hasMore]);
 
   const handleCategorySelect = (id: number | null) => {
     setActiveCategoryId(id);
@@ -287,9 +356,9 @@ function PlacesContent() {
                   ? 'Seçilmiş ərazidəki restoranlar'
                   : 'Yaxınlıqdakı restoranlar'}
               </h1>
-              {!loading && (
-                <span className="text-sm text-gray-500">
-                  {restaurants.length} restoran
+              {!loading && total !== null && (
+                <span className="inline-flex items-center gap-1.5 bg-[#006653] text-white text-sm font-semibold px-3 py-1 rounded-full">
+                  {total} restoran
                 </span>
               )}
             </div>
@@ -355,6 +424,17 @@ function PlacesContent() {
                     </div>
                   );
                 })
+              )}
+
+              {/* Sentinel həmişə DOM-da — observer mount zamanı tapır */}
+              <div ref={sentinelRef} className="h-1" />
+
+              {loadingMore && (
+                <div className="space-y-4 pt-2">
+                  {Array.from({ length: 3 }).map((_, i) => (
+                    <div key={i} className="h-44 bg-gray-200 rounded-lg animate-pulse" />
+                  ))}
+                </div>
               )}
             </div>
           </div>
