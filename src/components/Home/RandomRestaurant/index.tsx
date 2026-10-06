@@ -2,6 +2,7 @@ import apiClient from '@/api';
 import Image from 'next/image';
 import Link from 'next/link';
 import BannerImg from '@/assets/images/banner-img.jpg';
+import { getT } from '@/lib/i18n';
 
 interface RandomRestaurantData {
   id: number;
@@ -30,55 +31,19 @@ const getRandomRestaurant = async (): Promise<RandomRestaurantResponse | null> =
   }
 };
 
-interface Dict {
-  badge: string;
-  title: string;
-  subtitle: string;
-  value: string;
-  button: string;
-}
-
-// Default advertisement content shown until an admin uploads a campaign.
-const DICT: Record<string, Dict> = {
-  az: {
-    badge: 'Tövsiyə olunan restoran',
-    title: 'Şəhərin ən yaxşı restoranını kəşf et',
-    subtitle:
-      'Seçilmiş restoranlarda xüsusi təkliflərdən yararlan və masanı indi rezerv et.',
-    value: '20% endirim',
-    button: 'İndi rezerv et',
-  },
-  en: {
-    badge: 'Featured restaurant',
-    title: "Discover the city's finest restaurant",
-    subtitle:
-      'Enjoy special offers at selected restaurants and book your table now.',
-    value: '20% off',
-    button: 'Book now',
-  },
-  ru: {
-    badge: 'Рекомендуемый ресторан',
-    title: 'Откройте лучший ресторан города',
-    subtitle:
-      'Пользуйтесь спецпредложениями в избранных ресторанах и бронируйте столик прямо сейчас.',
-    value: 'Скидка 20%',
-    button: 'Забронировать',
-  },
-};
-
 interface RandomRestaurantProps {
   lang: string;
 }
 
 export default async function RandomRestaurant({ lang }: RandomRestaurantProps) {
-  const t = DICT[lang] ?? DICT.az;
+  const t = getT(lang);
   const response = await getRandomRestaurant();
   const campaignData = response?.data;
 
   // Admin-provided values override the localized defaults.
-  const title = campaignData?.title || t.title;
-  const subtitle = campaignData?.subtitle || t.subtitle;
-  const value = campaignData?.value || t.value;
+  const title = campaignData?.title || t('home.campaign.title');
+  const subtitle = campaignData?.subtitle || t('home.campaign.subtitle');
+  const value = campaignData?.value || t('home.campaign.value');
   const imageUrl = campaignData?.image_url || BannerImg;
 
   return (
@@ -88,7 +53,7 @@ export default async function RandomRestaurant({ lang }: RandomRestaurantProps) 
           {/* Text panel */}
           <div className="order-2 lg:order-1 flex flex-col justify-center bg-gradient-to-br from-[#013a30] via-[#006653] to-[#0a7d54] p-8 sm:p-10 lg:p-12 text-white">
             <span className="inline-flex w-fit items-center rounded-full bg-[#9fe870] px-3 py-1 text-xs font-bold uppercase tracking-wide text-[#14532d]">
-              {t.badge}
+              {t('home.campaign.badge')}
             </span>
             <h4 className="mt-4 text-3xl md:text-4xl lg:text-[44px] font-semibold leading-[1.1] tracking-tight">
               {title}
@@ -99,7 +64,7 @@ export default async function RandomRestaurant({ lang }: RandomRestaurantProps) 
             <Link
               href={`/${lang}/places`}
               className="mt-6 inline-flex w-fit items-center justify-center rounded-xl bg-[#9fe870] px-7 py-3 text-sm font-semibold text-[#14532d] transition-colors hover:bg-[#8fdc5c]">
-              {t.button}
+              {t('home.campaign.button')}
             </Link>
           </div>
 

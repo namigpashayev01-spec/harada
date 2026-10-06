@@ -22,4 +22,11 @@ export const languageOptions: LanguageOption[] = [
     name: 'RU',
     flag: Flag,
   },
+  // Foreign-section languages — shown only on the pages that have them
+  // (LanguageSwitcher filters by langsForPath).
+  { code: 'sr', name: 'SRB', flag: Flag },
+  { code: 'nl', name: 'NL', flag: Flag },
+  { code: 'uz', name: 'UZ', flag: Flag },
+  { code: 'fr', name: 'FR', flag: Flag },
+  { code: 'lv', name: 'LV', flag: Flag },
 ];

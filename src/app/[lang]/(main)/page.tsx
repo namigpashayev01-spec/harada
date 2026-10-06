@@ -6,7 +6,10 @@ import Categories from '@/components/Home/Categories';
 import PopularPlaces from '@/components/Home/PopularPlaces';
 import RandomRestaurant from '@/components/Home/RandomRestaurant';
 import BestOffers from '@/components/Home/BestOffers';
+import blogService from '@/services/blog.service';
+import placeService from '@/services/place.service';
 import { pageAlternates } from '@/lib/seo';
+import { t } from '@/lib/i18n';
 
 interface HomeProps {
   params: Promise<{ lang: string }>;
@@ -15,9 +18,8 @@ interface HomeProps {
 export async function generateMetadata({ params }: HomeProps): Promise<Metadata> {
   const { lang } = await params;
   return {
-    title: { absolute: 'Harada Oturaq — Restoranlar, Rezervasiya və Endirim' },
-    description:
-      'Yaxınlığındakı ən yaxşı restoranları tap, menyu və qiymətlərə bax, onlayn rezervasiya et və xüsusi endirimlərdən yararlan.',
+    title: { absolute: t(lang, 'seo.home.title') },
+    description: t(lang, 'seo.home.description'),
     alternates: pageAlternates(lang, ''),
   };
 }
@@ -25,15 +27,25 @@ export async function generateMetadata({ params }: HomeProps): Promise<Metadata>
 export default async function Home({ params }: HomeProps) {
   const { lang } = await params;
 
+  // Server-fetched so the carousel's posts land in the initial HTML.
+  const latestBlogs = await blogService
+    .getLatestBlogs(lang)
+    .then((res) => res.data ?? [])
+    .catch(() => []);
+
+  // Same reason, and it matters more here: without it the home page shipped
+  // zero links to any restaurant, leaving every detail page an orphan.
+  const popular = await placeService.getPopularPlaces().catch(() => undefined);
+
   return (
     <>
       <MobileStickySearch />
       <Header lang={lang} />
       <Categories />
-      <PopularPlaces lang={lang} />
+      <PopularPlaces lang={lang} initialData={popular} />
       <RandomRestaurant lang={lang} />
       <BestOffers lang={lang} />
-      <BlogList />
+      <BlogList blogs={latestBlogs} />
     </>
   );
 }

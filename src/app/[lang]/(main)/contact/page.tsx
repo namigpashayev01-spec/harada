@@ -4,6 +4,7 @@ import ContactHero from '@/components/Contact/ContactHero';
 import ContactInfo from '@/components/Contact/ContactInfo';
 import { getContactDict } from '@/components/Contact/translations';
 import { pageAlternates } from '@/lib/seo';
+import { t } from '@/lib/i18n';
 
 interface ContactPageProps {
   params: Promise<{ lang: string }>;
@@ -14,9 +15,8 @@ export async function generateMetadata({
 }: ContactPageProps): Promise<Metadata> {
   const { lang } = await params;
   return {
-    title: { absolute: 'Əlaqə — Bizimlə əlaqə saxla | Harada Oturaq' },
-    description:
-      'Sual, təklif və ya əməkdaşlıq üçün Harada Oturaq komandası ilə əlaqə saxla. Mesajını göndər, qısa zamanda cavab verək.',
+    title: { absolute: t(lang, 'seo.contact.title') },
+    description: t(lang, 'seo.contact.description'),
     alternates: pageAlternates(lang, '/contact'),
   };
 }

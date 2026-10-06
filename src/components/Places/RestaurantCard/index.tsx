@@ -6,12 +6,14 @@ import Link from 'next/link';
 import { NearbyRestaurant } from '@/types/restaurant';
 import { usePathname } from 'next/navigation';
 import FavoriteButton from '@/components/common/FavoriteButton';
+import { useT } from '@/context/TranlateContext';
 
 interface RestaurantCardProps {
   restaurant: NearbyRestaurant;
 }
 
 export default function RestaurantCard({ restaurant }: RestaurantCardProps) {
+  const t = useT();
   const pathname = usePathname();
   const lang = pathname.split('/')[1] || 'az';
   const [imgError, setImgError] = useState(false);
@@ -35,13 +37,13 @@ export default function RestaurantCard({ restaurant }: RestaurantCardProps) {
             <div className="flex h-full w-full flex-col items-center justify-center bg-gradient-to-br from-[#013a30] via-[#006653] to-[#0a7d54]">
               <UtensilsCrossed className="h-9 w-9 text-[#9fe870]" />
               <span className="mt-2 line-clamp-2 px-4 text-center text-sm font-semibold text-white">
-                {restaurant.title || 'Restoran'}
+                {restaurant.title || t('common.restaurant')}
               </span>
             </div>
           ) : (
             <Image
               src={restaurant.image}
-              alt={restaurant.title || 'Restaurant'}
+              alt={restaurant.title || t('common.restaurant')}
               fill
               sizes="(max-width: 640px) 90vw, 240px"
               onError={() => setImgError(true)}
@@ -59,7 +61,7 @@ export default function RestaurantCard({ restaurant }: RestaurantCardProps) {
           )}
           {restaurant.is_special_offer && (
             <span className="rounded-full bg-white px-2.5 py-1 text-[11px] font-bold text-[#006653] shadow-sm">
-              Endirimli
+              {t('filter.offer')}
             </span>
           )}
         </div>
@@ -97,7 +99,7 @@ export default function RestaurantCard({ restaurant }: RestaurantCardProps) {
             ))}
             {typeof restaurant.reviews_count === 'number' && (
               <span className="text-xs text-gray-400">
-                ({restaurant.reviews_count} rəy)
+                {t('card.reviewCount', { n: restaurant.reviews_count })}
               </span>
             )}
           </div>
@@ -114,7 +116,7 @@ export default function RestaurantCard({ restaurant }: RestaurantCardProps) {
           {restaurant.distance != null && (
             <span className="flex items-center gap-1 text-gray-500">
               <Navigation className="h-3.5 w-3.5 text-gray-400" />
-              {restaurant.distance.toFixed(1)} km uzaqda
+              {t('card.distanceAway', { km: restaurant.distance.toFixed(1) })}
             </span>
           )}
         </div>
@@ -124,7 +126,7 @@ export default function RestaurantCard({ restaurant }: RestaurantCardProps) {
           <Link
             href={href}
             className="inline-flex w-full items-center justify-center gap-1.5 rounded-xl bg-[#006653] px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#00543f] sm:w-auto">
-            Ətraflı bax
+            {t('card.viewDetails')}
             <ArrowRight className="h-4 w-4" />
           </Link>
         </div>

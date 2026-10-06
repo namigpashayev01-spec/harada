@@ -43,7 +43,7 @@ const extractImages = (item: UserFeedbackItem): string[] => {
 
 export default function ReviewsPage() {
   const { lang } = useParams<{ lang: string }>();
-  const t = DICT[lang] ?? DICT.az;
+  const t = DICT[lang] ?? DICT.en;
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ["user", "feedbacks"],

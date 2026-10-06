@@ -1,5 +1,28 @@
 import apiClient from '@/api';
 
+export type SlotStatus = 'available' | 'full' | 'blocked' | 'past';
+
+export interface AvailabilityHour {
+  time: string;
+  status: SlotStatus;
+  remaining: number | null;
+}
+
+export interface AvailabilityMeal {
+  type: 'breakfast' | 'lunch' | 'dinner';
+  hours: AvailabilityHour[];
+  available_count: number;
+}
+
+export interface AvailabilityResponse {
+  date: string;
+  reservation_enabled: boolean;
+  capacity: number | null;
+  whole_day_blocked: boolean;
+  block_reason: string | null;
+  meals: AvailabilityMeal[];
+}
+
 export interface ReservationPayload {
   restoran_id: number;
   date: string;
@@ -47,6 +70,12 @@ const reservationService = {
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     });
   },
+
+  /** Seçilmiş gün üçün hansı saatların boş/dolu/bağlı olduğu. */
+  getAvailability: (restoranId: number | string, date: string) =>
+    apiClient.get<AvailabilityResponse>(
+      `/restoran/${restoranId}/availability?date=${date}`,
+    ),
 
   getMyReservations: () =>
     apiClient.get<UserReservationsResponse>('/user/reservations'),

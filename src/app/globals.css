@@ -245,3 +245,316 @@
   padding: 8px 12px;
   cursor: pointer;
 }
+
+/* ---------------------------------------------------------------------------
+   Blog article typography (.blog-content)
+
+   The project does not use @tailwindcss/typography (adding the plugin blows the
+   build budget on this RAM-tight box), yet blog bodies arrive as raw HTML from
+   the admin panel. Without these rules an <h2> renders at the same size as a
+   <p>, which destroys both readability and the heading hierarchy Google reads.
+   Everything below is scoped to .blog-content so it can never leak into the
+   app UI.
+--------------------------------------------------------------------------- */
+.blog-content {
+  color: #374151;
+  font-size: 17px;
+  line-height: 1.85;
+  word-break: break-word;
+}
+
+@media (min-width: 1024px) {
+  .blog-content {
+    font-size: 18px;
+  }
+}
+
+.blog-content > *:first-child {
+  margin-top: 0;
+}
+
+.blog-content p {
+  margin: 0 0 20px;
+}
+
+/* Lead paragraph — the hook right under the H1. */
+.blog-content .blog-lead {
+  font-size: 19px;
+  line-height: 1.75;
+  color: #1f2937;
+  font-weight: 500;
+}
+
+@media (min-width: 1024px) {
+  .blog-content .blog-lead {
+    font-size: 21px;
+  }
+}
+
+.blog-content h2 {
+  font-size: 26px;
+  line-height: 1.3;
+  font-weight: 700;
+  color: #111827;
+  margin: 44px 0 16px;
+  padding-left: 14px;
+  border-left: 5px solid var(--color-brand);
+  scroll-margin-top: 100px;
+}
+
+@media (min-width: 1024px) {
+  .blog-content h2 {
+    font-size: 30px;
+  }
+}
+
+.blog-content h3 {
+  font-size: 21px;
+  line-height: 1.35;
+  font-weight: 700;
+  color: #1f2937;
+  margin: 32px 0 12px;
+  scroll-margin-top: 100px;
+}
+
+@media (min-width: 1024px) {
+  .blog-content h3 {
+    font-size: 23px;
+  }
+}
+
+.blog-content h4 {
+  font-size: 18px;
+  font-weight: 700;
+  color: #374151;
+  margin: 24px 0 10px;
+}
+
+.blog-content ul,
+.blog-content ol {
+  margin: 0 0 22px;
+  padding-left: 0;
+  list-style: none;
+}
+
+.blog-content li {
+  position: relative;
+  padding-left: 30px;
+  margin-bottom: 12px;
+}
+
+.blog-content ul > li::before {
+  content: '';
+  position: absolute;
+  left: 6px;
+  top: 12px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-brand);
+  box-shadow: 0 0 0 3px var(--color-brand-soft);
+}
+
+.blog-content ol {
+  counter-reset: blog-counter;
+}
+
+.blog-content ol > li {
+  counter-increment: blog-counter;
+}
+
+.blog-content ol > li::before {
+  content: counter(blog-counter);
+  position: absolute;
+  left: 0;
+  top: 4px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--color-brand);
+  color: var(--color-brand-ink);
+  font-size: 12px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.blog-content li > ul,
+.blog-content li > ol {
+  margin: 12px 0 0;
+}
+
+.blog-content a {
+  color: var(--color-brand-ink);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: var(--color-brand);
+  text-decoration-thickness: 2px;
+  transition: color 0.15s ease;
+}
+
+.blog-content a:hover {
+  color: var(--color-discount);
+}
+
+.blog-content strong,
+.blog-content b {
+  color: #111827;
+  font-weight: 700;
+}
+
+.blog-content blockquote {
+  margin: 28px 0;
+  padding: 18px 22px;
+  background: var(--color-brand-soft);
+  border-left: 5px solid var(--color-brand);
+  border-radius: 0 10px 10px 0;
+  font-size: 18px;
+  font-style: italic;
+  color: #1f2937;
+}
+
+.blog-content blockquote p:last-child {
+  margin-bottom: 0;
+}
+
+/* Callout box — "quick answer", tips, warnings. Colour set by modifier class. */
+.blog-content .blog-note {
+  margin: 28px 0;
+  padding: 20px 22px;
+  border-radius: 12px;
+  background: var(--color-brand-soft);
+  border: 1px solid #d5efc0;
+}
+
+.blog-content .blog-note--warning {
+  background: var(--color-orange-soft);
+  border-color: #f5d5ae;
+}
+
+.blog-content .blog-note-title {
+  display: block;
+  font-weight: 700;
+  color: #111827;
+  margin-bottom: 8px;
+  font-size: 16px;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+}
+
+.blog-content .blog-note p:last-child,
+.blog-content .blog-note ul:last-child,
+.blog-content .blog-note li:last-child {
+  margin-bottom: 0;
+}
+
+/* Tables must scroll inside their own box — never widen the page on mobile. */
+.blog-content .blog-table-wrap {
+  overflow-x: auto;
+  margin: 28px 0;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  -webkit-overflow-scrolling: touch;
+}
+
+.blog-content table {
+  width: 100%;
+  min-width: 480px;
+  border-collapse: collapse;
+  font-size: 16px;
+  background: #fff;
+}
+
+.blog-content thead th {
+  background: var(--color-brand-soft);
+  color: #14532d;
+  font-weight: 700;
+  text-align: left;
+  padding: 14px 16px;
+  white-space: nowrap;
+}
+
+.blog-content tbody td {
+  padding: 13px 16px;
+  border-top: 1px solid #eef0f2;
+  vertical-align: top;
+}
+
+.blog-content tbody tr:nth-child(even) td {
+  background: #fbfdf9;
+}
+
+.blog-content img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 12px;
+  margin: 28px 0;
+}
+
+.blog-content figure {
+  margin: 28px 0;
+}
+
+.blog-content figure img {
+  margin: 0;
+}
+
+.blog-content figcaption {
+  margin-top: 10px;
+  font-size: 14px;
+  color: #6b7280;
+  text-align: center;
+}
+
+.blog-content hr {
+  margin: 40px 0;
+  border: 0;
+  border-top: 1px solid #e5e7eb;
+}
+
+/* FAQ block — <details> keeps it interactive without any JS. */
+.blog-content details {
+  margin: 0 0 12px;
+  padding: 16px 18px;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  background: #fff;
+}
+
+.blog-content details[open] {
+  border-color: var(--color-brand);
+}
+
+.blog-content summary {
+  cursor: pointer;
+  font-weight: 700;
+  color: #111827;
+  list-style: none;
+  font-size: 17px;
+}
+
+.blog-content summary::-webkit-details-marker {
+  display: none;
+}
+
+.blog-content summary::after {
+  content: '+';
+  float: right;
+  font-size: 22px;
+  line-height: 1;
+  color: var(--color-brand-ink);
+}
+
+.blog-content details[open] summary::after {
+  content: '−';
+}
+
+.blog-content details > *:not(summary) {
+  margin-top: 12px;
+}
+
+.blog-content details p:last-child {
+  margin-bottom: 0;
+}

@@ -7,6 +7,7 @@ import { MapPin, Star, UtensilsCrossed } from 'lucide-react';
 import FavoriteButton from '@/components/common/FavoriteButton';
 import { ISlug } from '@/types';
 import { Restaurant } from '@/types/restaurant';
+import { useT } from '@/context/TranlateContext';
 
 interface RestaurantCardProps {
   place: Restaurant;
@@ -21,6 +22,7 @@ const resolveSlug = (slug: ISlug | undefined, lang: string, id: number): string 
 };
 
 const RestaurantCard = ({ place, lang, topBadge }: RestaurantCardProps) => {
+  const t = useT();
   const [imgError, setImgError] = useState(false);
   const href = `/${lang}/places/${resolveSlug(place.slug, lang, place.id)}`;
   // Show a branded cover when there is no image or it fails to load.
@@ -37,7 +39,11 @@ const RestaurantCard = ({ place, lang, topBadge }: RestaurantCardProps) => {
   // Top-left status badge (single, priority-ordered).
   const badge =
     topBadge ||
-    (place.is_vip ? 'Top 10 Bakı' : place.is_special_offer ? 'Təklif' : '');
+    (place.is_vip
+      ? t('card.topBadge')
+      : place.is_special_offer
+        ? t('card.offerBadge')
+        : '');
 
   return (
     <Link
@@ -52,18 +58,25 @@ const RestaurantCard = ({ place, lang, topBadge }: RestaurantCardProps) => {
             <div className="pointer-events-none absolute -bottom-10 -left-6 h-28 w-28 rounded-full bg-black/10" />
             <UtensilsCrossed className="relative z-10 h-9 w-9 text-[#9fe870]" />
             <span className="relative z-10 mt-2 line-clamp-2 px-5 text-center text-sm font-semibold text-white">
-              {place.title || 'Restoran'}
+              {place.title || t('common.restaurant')}
             </span>
           </div>
         ) : (
           <Image
             src={place.image as string}
-            alt={place.title || 'Restaurant'}
+            alt={place.title || t('common.restaurant')}
             fill
             sizes="(max-width: 640px) 90vw, (max-width: 1024px) 45vw, 23vw"
             onError={() => setImgError(true)}
             className="object-cover transition-transform duration-500 group-hover:scale-105"
           />
+        )}
+
+        {/* Google Places photos must carry their author's name. */}
+        {!showCover && place.image_credit && (
+          <span className="pointer-events-none absolute bottom-1.5 right-1.5 z-10 max-w-[85%] truncate rounded bg-black/50 px-1.5 py-0.5 text-[10px] text-white/90">
+            © {place.image_credit}
+          </span>
         )}
 
         {badge && (
@@ -94,7 +107,7 @@ const RestaurantCard = ({ place, lang, topBadge }: RestaurantCardProps) => {
         {(typeof place.reviews_count === 'number' || cuisine) && (
           <p className="mt-1 text-sm text-muted-foreground line-clamp-1">
             {typeof place.reviews_count === 'number' && (
-              <span>({place.reviews_count} rəy) </span>
+              <span>{t('card.reviewCount', { n: place.reviews_count })} </span>
             )}
             {cuisine}
           </p>
@@ -107,7 +120,7 @@ const RestaurantCard = ({ place, lang, topBadge }: RestaurantCardProps) => {
 
         {typeof place.discount === 'number' && place.discount > 0 && (
           <span className="mt-3 inline-flex w-fit items-center rounded-md bg-discount-soft px-2.5 py-1 text-xs font-semibold text-discount">
-            −{place.discount}% endirim
+            {t('card.discount', { percent: place.discount })}
           </span>
         )}
       </div>

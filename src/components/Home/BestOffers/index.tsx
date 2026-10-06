@@ -4,12 +4,14 @@ import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 import { usePopularPlaces } from '@/hooks/usePopularPlaces';
 import RestaurantCard from '@/components/shared/RestaurantCard';
+import { useT } from '@/context/TranlateContext';
 
 interface BestOffersProps {
   lang: string;
 }
 
 const BestOffers = ({ lang }: BestOffersProps) => {
+  const t = useT();
   const { data, isLoading } = usePopularPlaces();
   const categories = data?.data ?? [];
 
@@ -50,13 +52,13 @@ const BestOffers = ({ lang }: BestOffersProps) => {
           <div className="relative">
             <div className="mb-7 flex flex-col gap-1.5">
               <span className="inline-flex w-fit items-center rounded-full bg-[#14532d] px-3 py-1 text-xs font-bold uppercase tracking-wide text-[#9fe870]">
-                Endirimlər
+                {t('home.offers.badge')}
               </span>
               <h2 className="section-title !text-[#14532d]">
-                Ən yaxşı təkliflər
+                {t('home.offers.title')}
               </h2>
               <p className="text-sm font-medium text-[#14532d]/80 md:text-base">
-                Endirimli masalar — qənaət edərək rezerv et
+                {t('home.offers.subtitle')}
               </p>
             </div>
 
@@ -72,19 +74,19 @@ const BestOffers = ({ lang }: BestOffersProps) => {
                 <div className="pointer-events-none absolute -bottom-12 -left-8 h-32 w-32 rounded-full bg-white/10 blur-2xl" />
                 <div className="relative">
                   <span className="inline-flex items-center rounded-full bg-[#9fe870] px-3 py-1 text-xs font-bold uppercase tracking-wide text-[#14532d]">
-                    Endirim
+                    {t('home.offers.promoBadge')}
                   </span>
                   <h3 className="mt-4 text-2xl font-bold leading-tight md:text-3xl">
-                    30%-ə qədər endirim
+                    {t('home.offers.promoTitle')}
                   </h3>
                   <p className="mt-2 text-sm text-white/85">
-                    Seçilmiş restoranlarda xüsusi təkliflər
+                    {t('home.offers.promoSubtitle')}
                   </p>
                 </div>
                 <Link
                   href={`/${lang}/places`}
                   className="relative mt-6 inline-flex w-fit items-center gap-1.5 rounded-lg bg-[#9fe870] px-4 py-2.5 text-sm font-semibold text-[#14532d] transition-colors hover:bg-[#8fdc5c]">
-                  Təkliflərə bax <ArrowRight className="h-4 w-4" />
+                  {t('home.offers.cta')} <ArrowRight className="h-4 w-4" />
                 </Link>
               </div>
 

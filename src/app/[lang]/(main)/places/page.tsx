@@ -17,8 +17,10 @@ import categoriesService from '@/services/categories.service';
 import { NearbyRestaurant } from '@/types/restaurant';
 import { useParams } from 'next/navigation';
 import { Category } from '@/types/category';
+import { useT } from '@/context/TranlateContext';
 
 function PlacesContent() {
+  const t = useT();
   const searchParams = useSearchParams();
   const router = useRouter();
   const { lang } = useParams<{ lang: string }>();
@@ -28,6 +30,10 @@ function PlacesContent() {
   const neLngParam = searchParams.get('ne_lng');
   const swLatParam = searchParams.get('sw_lat');
   const swLngParam = searchParams.get('sw_lng');
+  // Axtarış qutusundakı "mənim yerim" bu iki parametri göndərir —
+  // bbox yoxdursa nəticələr bu nöqtəyə görə məsafə ilə sıralanır.
+  const latParam = searchParams.get('lat');
+  const lngParam = searchParams.get('lng');
   const bbox =
     neLatParam && neLngParam && swLatParam && swLngParam
       ? {
@@ -179,6 +185,18 @@ function PlacesContent() {
       return;
     }
 
+    // URL-də hazır koordinat varsa brauzerdən icazə istəməyə ehtiyac yoxdur
+    if (latParam && lngParam) {
+      const loc = { lat: parseFloat(latParam), lng: parseFloat(lngParam) };
+      if (!Number.isNaN(loc.lat) && !Number.isNaN(loc.lng)) {
+        userLocationRef.current = loc;
+        setUserLocation(loc);
+        setLocationError(false);
+        fetchRestaurants(loc, search, null, propFiltersRef.current, activeCategoryId);
+        return;
+      }
+    }
+
     if (userLocationRef.current) {
       console.log('[SearchArea] ➡️ Path: cached user geolocation → nearby search');
       fetchRestaurants(userLocationRef.current, search, null, propFiltersRef.current, activeCategoryId);
@@ -202,7 +220,7 @@ function PlacesContent() {
       { enableHighAccuracy: true, timeout: 8000 },
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [search, neLatParam, neLngParam, swLatParam, swLngParam, fetchRestaurants, activeCategoryId, urlFiltersKey]);
+  }, [search, neLatParam, neLngParam, swLatParam, swLngParam, latParam, lngParam, fetchRestaurants, activeCategoryId, urlFiltersKey]);
 
   // Ref-i həmişə son fetchNextPage-ə yönləndir
   useEffect(() => {
@@ -304,7 +322,7 @@ function PlacesContent() {
           <div className="absolute inset-0 overflow-hidden opacity-40">
             <Image
               src={PlaceBanner}
-              alt="Food banner"
+              alt={t('places.bannerAlt')}
               className="w-full h-full object-cover"
               fill
             />
@@ -351,22 +369,21 @@ function PlacesContent() {
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
               <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
                 {search
-                  ? `"${search}" üçün nəticələr`
+                  ? t('places.resultsFor', { query: search })
                   : bbox
-                  ? 'Seçilmiş ərazidəki restoranlar'
-                  : 'Yaxınlıqdakı restoranlar'}
+                    ? t('places.inSelectedArea')
+                    : t('places.nearby')}
               </h1>
               {!loading && total !== null && (
                 <span className="inline-flex items-center gap-1.5 bg-[#006653] text-white text-sm font-semibold px-3 py-1 rounded-full">
-                  {total} restoran
+                  {t('places.restaurantCount', { n: total })}
                 </span>
               )}
             </div>
 
             {locationError && (
               <p className="text-sm text-amber-600 bg-amber-50 border border-amber-200 px-3 py-2 rounded-lg">
-                Məkanınız təyin edilə bilmədi. Standart ərazidəki restoranlar
-                göstərilir.
+                {t('places.locationError')}
               </p>
             )}
 
@@ -374,7 +391,7 @@ function PlacesContent() {
               onClick={() => setShowMobileMap(!showMobileMap)}
               className="lg:hidden w-full bg-[#006653] hover:bg-[#00543f] text-white">
               <MapIcon className="h-4 w-4 mr-2" />
-              {showMobileMap ? 'Siyahını göstər' : 'Xəritədə göstər'}
+              {showMobileMap ? t('places.showList') : t('places.showMap')}
             </Button>
 
             <div
@@ -389,12 +406,12 @@ function PlacesContent() {
               ) : restaurants.length === 0 ? (
                 <div className="flex flex-col items-center gap-3 py-12 text-center">
                   <p className="text-gray-500">
-                    Restoran tapılmadı. Filtrləri dəyişməyi sınayın.
+                    {t('places.empty')}
                   </p>
                   <button
                     onClick={resetAllFilters}
                     className="inline-flex items-center gap-1.5 rounded-full bg-[#9fe870] px-5 py-2.5 text-sm font-semibold text-[#14532d] transition-colors hover:bg-[#8fdc5c]">
-                    Filtrləri sıfırla
+                    {t('places.resetFilters')}
                   </button>
                 </div>
               ) : (
@@ -457,7 +474,7 @@ function PlacesContent() {
                   onClick={() => setShowMobileMap(false)}
                   variant="outline"
                   className="w-full">
-                  Xəritəni bağla
+                  {t('places.closeMap')}
                 </Button>
               </div>
               <div className="flex-1">

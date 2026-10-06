@@ -1,9 +1,11 @@
 'use client';
 
+import { homeLang } from '@/lib/locales';
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import {
+  Check,
   ChevronLeft,
   ChevronRight,
   MapPin,
@@ -13,20 +15,17 @@ import {
   Upload,
   Calendar,
   Navigation2,
-  Users,
-  Phone,
-  CheckCircle2,
   Images,
   Sparkles,
   UtensilsCrossed,
+  Phone,
+  Globe,
 } from 'lucide-react';
-import { DayPicker } from 'react-day-picker';
-import { az as azLocale, enUS, ru as ruLocale } from 'date-fns/locale';
-import 'react-day-picker/style.css';
 import { Restaurant } from '@/types/restaurant';
 import GoogleMap, { MapLocation } from '@/components/Places/GoogleMap';
-import reservationService from '@/services/reservation.service';
+import ReservationForm from '@/components/Places/ReservationForm';
 import feedbackService, { Impression } from '@/services/feedback.service';
+import { countryPath } from '@/lib/geo';
 import FeedbackList from './FeedbackList';
 import OpeningHours from './OpeningHours';
 import FavoriteButton from '@/components/common/FavoriteButton';
@@ -56,6 +55,7 @@ interface Dict {
   specialOffer: string;
   features: string;
   menu: string;
+  viewMenu: string;
   location: string;
   reserveTable: string;
   reservationConfirmed: string;
@@ -84,12 +84,14 @@ interface Dict {
   nameFromAccount: string;
   recommend: string;
   whatImpressed: string;
+  whatImpressedHint: string;
   uploadImages: string;
   writeFeedback: string;
   writeHere: string;
   submitting: string;
   submitFeedback: string;
   nameRequired: string;
+  impressionRequired: string;
   ratingLabels: Record<number, string>;
 }
 
@@ -105,6 +107,7 @@ const DICT: Record<string, Dict> = {
     specialOffer: 'Xüsusi təklif',
     features: 'İmkanlar',
     menu: 'Menyu',
+    viewMenu: 'Menyuya bax',
     location: 'Yerləşmə',
     reserveTable: 'Masa rezerv et',
     reservationConfirmed: 'Rezervasiya təsdiqləndi!',
@@ -133,12 +136,14 @@ const DICT: Record<string, Dict> = {
     nameFromAccount: 'Ad hesabınızdan götürülüb.',
     recommend: 'Bu restoranı dostlarıma tövsiyə edirəm',
     whatImpressed: 'Nə xoşunuza gəldi?',
+    whatImpressedHint: 'Bir neçəsini seçə bilərsiniz',
     uploadImages: 'Şəkil yüklə',
     writeFeedback: 'Rəyinizi yazın',
     writeHere: 'Buraya yazın...',
     submitting: 'Göndərilir...',
     submitFeedback: 'Rəyi göndər',
     nameRequired: 'Ad və Soyad mütləqdir.',
+    impressionRequired: 'Ən azı bir seçim edin.',
     ratingLabels: {
       1: 'Təcrübəm pis idi',
       2: 'Təcrübəm orta idi',
@@ -158,6 +163,7 @@ const DICT: Record<string, Dict> = {
     specialOffer: 'Special Offer',
     features: 'Features',
     menu: 'Menu',
+    viewMenu: 'View Menu',
     location: 'Location',
     reserveTable: 'Reserve a Table',
     reservationConfirmed: 'Reservation Confirmed!',
@@ -186,12 +192,14 @@ const DICT: Record<string, Dict> = {
     nameFromAccount: 'Name is taken from your account.',
     recommend: 'I recommend this restaurant to my friends',
     whatImpressed: 'What impressed you?',
+    whatImpressedHint: 'You can pick more than one',
     uploadImages: 'Upload images',
     writeFeedback: 'Write your feedback',
     writeHere: 'Write here...',
     submitting: 'Submitting...',
     submitFeedback: 'Submit Feedback',
     nameRequired: 'Name and Surname are required.',
+    impressionRequired: 'Pick at least one option.',
     ratingLabels: {
       1: 'My experience was bad',
       2: 'My experience was okay',
@@ -211,6 +219,7 @@ const DICT: Record<string, Dict> = {
     specialOffer: 'Спецпредложение',
     features: 'Услуги',
     menu: 'Меню',
+    viewMenu: 'Смотреть меню',
     location: 'Расположение',
     reserveTable: 'Забронировать столик',
     reservationConfirmed: 'Бронь подтверждена!',
@@ -239,12 +248,14 @@ const DICT: Record<string, Dict> = {
     nameFromAccount: 'Имя взято из вашего аккаунта.',
     recommend: 'Рекомендую этот ресторан друзьям',
     whatImpressed: 'Что вам понравилось?',
+    whatImpressedHint: 'Можно выбрать несколько',
     uploadImages: 'Загрузить фото',
     writeFeedback: 'Напишите отзыв',
     writeHere: 'Напишите здесь...',
     submitting: 'Отправка...',
     submitFeedback: 'Отправить отзыв',
     nameRequired: 'Имя и Фамилия обязательны.',
+    impressionRequired: 'Выберите хотя бы один вариант.',
     ratingLabels: {
       1: 'Мне совсем не понравилось',
       2: 'Так себе',
@@ -255,10 +266,157 @@ const DICT: Record<string, Dict> = {
   },
 };
 
-const DP_LOCALES: Record<string, typeof azLocale> = {
-  az: azLocale,
-  en: enUS,
-  ru: ruLocale,
+// Foreign-section languages (src/lib/locales.ts). Reservations are not offered
+// abroad, so booking strings stay English; what a visitor reads is translated.
+DICT.sr = {
+  ...DICT.en,
+  places: 'Mesta',
+  giveFeedback: 'Ostavi recenziju',
+  reviewsCount: (n) => `${n} recenzija`,
+  openFrom: (v) => `Otvoreno od ${v}`,
+  photos: (n) => `${n} fotografija`,
+  noImage: 'Nema fotografije',
+  specialOffer: 'Posebna ponuda',
+  features: 'Karakteristike',
+  menu: 'Meni',
+  viewMenu: 'Pogledaj meni',
+  location: 'Lokacija',
+  quickInfo: 'Ukratko',
+  distanceTo: (title) => ` od ${title} do vas`,
+  ratingFeedback: 'Ocena i recenzija',
+  name: 'Ime',
+  surname: 'Prezime',
+  recommend: 'Preporučujem ovaj restoran prijateljima',
+  whatImpressed: 'Šta vam se dopalo?',
+  whatImpressedHint: 'Možete izabrati više opcija',
+  uploadImages: 'Dodaj fotografije',
+  writeFeedback: 'Napišite recenziju',
+  writeHere: 'Pišite ovde...',
+  submitting: 'Šalje se...',
+  submitFeedback: 'Pošalji recenziju',
+  nameRequired: 'Ime i prezime su obavezni.',
+  impressionRequired: 'Izaberite bar jednu opciju.',
+  ratingLabels: { 1: 'Loše iskustvo', 2: 'Osrednje iskustvo', 3: 'Solidno iskustvo', 4: 'Dobro iskustvo', 5: 'Odlično iskustvo' },
+};
+DICT.nl = {
+  ...DICT.en,
+  places: 'Plekken',
+  giveFeedback: 'Beoordeling schrijven',
+  reviewsCount: (n) => `${n} beoordelingen`,
+  openFrom: (v) => `Open vanaf ${v}`,
+  photos: (n) => `${n} foto's`,
+  noImage: 'Geen foto',
+  specialOffer: 'Speciale aanbieding',
+  features: 'Kenmerken',
+  menu: 'Menu',
+  viewMenu: 'Menu bekijken',
+  location: 'Locatie',
+  quickInfo: 'In het kort',
+  distanceTo: (title) => ` van ${title} naar jouw locatie`,
+  ratingFeedback: 'Beoordeling',
+  name: 'Voornaam',
+  surname: 'Achternaam',
+  recommend: 'Ik raad dit restaurant aan vrienden aan',
+  whatImpressed: 'Wat viel je op?',
+  whatImpressedHint: 'Je kunt meerdere kiezen',
+  uploadImages: "Foto's uploaden",
+  writeFeedback: 'Schrijf je beoordeling',
+  writeHere: 'Schrijf hier...',
+  submitting: 'Verzenden...',
+  submitFeedback: 'Beoordeling verzenden',
+  nameRequired: 'Voor- en achternaam zijn verplicht.',
+  impressionRequired: 'Kies minstens één optie.',
+  ratingLabels: { 1: 'Slechte ervaring', 2: 'Matige ervaring', 3: 'Prima ervaring', 4: 'Goede ervaring', 5: 'Geweldige ervaring' },
+};
+DICT.uz = {
+  ...DICT.en,
+  places: 'Maskanlar',
+  giveFeedback: 'Sharh qoldirish',
+  reviewsCount: (n) => `${n} ta sharh`,
+  openFrom: (v) => `${v} dan ochiq`,
+  photos: (n) => `${n} ta rasm`,
+  noImage: "Rasm yo'q",
+  specialOffer: 'Maxsus taklif',
+  features: 'Imkoniyatlar',
+  menu: 'Menyu',
+  viewMenu: "Menyuni ko'rish",
+  location: 'Joylashuv',
+  quickInfo: "Qisqacha ma'lumot",
+  distanceTo: (title) => ` ${title} gacha masofa`,
+  ratingFeedback: 'Baho va sharh',
+  name: 'Ism',
+  surname: 'Familiya',
+  recommend: "Bu restoranni do'stlarimga tavsiya qilaman",
+  whatImpressed: 'Sizga nima yoqdi?',
+  whatImpressedHint: 'Bir nechtasini tanlashingiz mumkin',
+  uploadImages: 'Rasm yuklash',
+  writeFeedback: 'Sharhingizni yozing',
+  writeHere: 'Shu yerga yozing...',
+  submitting: 'Yuborilmoqda...',
+  submitFeedback: 'Sharhni yuborish',
+  nameRequired: 'Ism va familiya majburiy.',
+  impressionRequired: 'Kamida bittasini tanlang.',
+  ratingLabels: { 1: 'Yomon', 2: "O'rtacha", 3: 'Yaxshi emas, yomon ham emas', 4: 'Yaxshi', 5: "A'lo" },
+};
+DICT.fr = {
+  ...DICT.en,
+  places: 'Lieux',
+  giveFeedback: 'Laisser un avis',
+  reviewsCount: (n) => `${n} avis`,
+  openFrom: (v) => `Ouvert dès ${v}`,
+  photos: (n) => `${n} photos`,
+  noImage: 'Aucune photo',
+  specialOffer: 'Offre spéciale',
+  features: 'Caractéristiques',
+  menu: 'Menu',
+  viewMenu: 'Voir le menu',
+  location: 'Emplacement',
+  quickInfo: 'En bref',
+  distanceTo: (title) => ` de ${title} à votre position`,
+  ratingFeedback: 'Note et avis',
+  name: 'Prénom',
+  surname: 'Nom',
+  recommend: 'Je recommande ce restaurant à mes amis',
+  whatImpressed: 'Qu’avez-vous apprécié ?',
+  whatImpressedHint: 'Plusieurs choix possibles',
+  uploadImages: 'Ajouter des photos',
+  writeFeedback: 'Rédigez votre avis',
+  writeHere: 'Écrivez ici...',
+  submitting: 'Envoi...',
+  submitFeedback: 'Envoyer l’avis',
+  nameRequired: 'Le prénom et le nom sont obligatoires.',
+  impressionRequired: 'Choisissez au moins une option.',
+  ratingLabels: { 1: 'Mauvaise expérience', 2: 'Expérience moyenne', 3: 'Expérience correcte', 4: 'Bonne expérience', 5: 'Excellente expérience' },
+};
+DICT.lv = {
+  ...DICT.en,
+  places: 'Vietas',
+  giveFeedback: 'Atstāt atsauksmi',
+  reviewsCount: (n) => `${n} atsauksmes`,
+  openFrom: (v) => `Atvērts no ${v}`,
+  photos: (n) => `${n} foto`,
+  noImage: 'Nav attēla',
+  specialOffer: 'Īpašais piedāvājums',
+  features: 'Iespējas',
+  menu: 'Ēdienkarte',
+  viewMenu: 'Skatīt ēdienkarti',
+  location: 'Atrašanās vieta',
+  quickInfo: 'Īsumā',
+  distanceTo: (title) => ` no ${title} līdz jums`,
+  ratingFeedback: 'Vērtējums un atsauksme',
+  name: 'Vārds',
+  surname: 'Uzvārds',
+  recommend: 'Iesaku šo restorānu draugiem',
+  whatImpressed: 'Kas jums patika?',
+  whatImpressedHint: 'Varat izvēlēties vairākus',
+  uploadImages: 'Augšupielādēt foto',
+  writeFeedback: 'Uzrakstiet atsauksmi',
+  writeHere: 'Rakstiet šeit...',
+  submitting: 'Sūta...',
+  submitFeedback: 'Nosūtīt atsauksmi',
+  nameRequired: 'Vārds un uzvārds ir obligāti.',
+  impressionRequired: 'Izvēlieties vismaz vienu variantu.',
+  ratingLabels: { 1: 'Slikta pieredze', 2: 'Viduvēja pieredze', 3: 'Normāla pieredze', 4: 'Laba pieredze', 5: 'Lieliska pieredze' },
 };
 
 function haversineKm(lat1: number, lon1: number, lat2: number, lon2: number) {
@@ -273,26 +431,39 @@ function haversineKm(lat1: number, lon1: number, lat2: number, lon2: number) {
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
-// WhatsApp number that reservation requests are sent to. For now the same
-// number is used for every restaurant (no per-restaurant number in the API yet).
-// Digits only, international format without "+", as required by wa.me.
-const RESERVATION_WHATSAPP = '994773151580';
-
 export default function RestaurantDetail({
   restaurant,
   lang,
 }: RestaurantDetailProps) {
   const { user } = useAuth();
-  const t = DICT[lang] ?? DICT.az;
-  const dpLocale = DP_LOCALES[lang] ?? azLocale;
+  const t = DICT[lang] ?? DICT.en;
   const allImages = [
     restaurant.image,
     ...restaurant.galleries.map((g) => g.image),
   ].filter(Boolean);
-  const allMenuImages = restaurant.menus.flatMap((m) => m.images ?? []);
+
+  // Menu lives on its own page (/places/[slug]/menu). Only surface the button
+  // when the restaurant actually has menu content to show.
+  const menuSlug =
+    restaurant.slug[lang as keyof typeof restaurant.slug] ||
+    restaurant.slug.az ||
+    restaurant.slug.en ||
+    restaurant.slug.ru ||
+    String(restaurant.id);
+  const menuHref = `/${lang}/places/${menuSlug}/menu`;
+  const hasMenu =
+    (restaurant.menu_categories?.length ?? 0) > 0 ||
+    restaurant.menus.some((m) => (m.images?.length ?? 0) > 0);
+
+  // Reservations exist for Azerbaijani restaurants only. Restaurants from other
+  // countries (Tashkent, Toronto) are listings of public facts with nobody on
+  // our side to take a booking, so they get the phone number and website.
+  const isHome = (restaurant.country ?? 'AZ') === 'AZ';
+  const foreignCountryPath = isHome ? null : countryPath(lang, restaurant.country);
+  const foreignCityPath =
+    foreignCountryPath && restaurant.city ? `${foreignCountryPath}/${restaurant.city}` : null;
 
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [feedbackOpen, setFeedbackOpen] = useState(false);
   const [feedbackRating, setFeedbackRating] = useState(1);
   const [feedbackHover, setFeedbackHover] = useState(0);
@@ -300,93 +471,21 @@ export default function RestaurantDetail({
   const [feedbackText, setFeedbackText] = useState('');
   const [feedbackName, setFeedbackName] = useState('');
   const [feedbackSurname, setFeedbackSurname] = useState('');
-  const [selectedImpressionId, setSelectedImpressionId] = useState<
-    number | null
-  >(null);
+  const [selectedImpressionIds, setSelectedImpressionIds] = useState<number[]>(
+    [],
+  );
   const [impressions, setImpressions] = useState<Impression[]>([]);
   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
   const [feedbackSubmitting, setFeedbackSubmitting] = useState(false);
   const [distance, setDistance] = useState<number | null>(null);
-  const [menuLightbox, setMenuLightbox] = useState<{
-    images: string[];
-    index: number;
-  } | null>(null);
   const [feedbackRefreshKey, setFeedbackRefreshKey] = useState(0);
   const [galleryOpen, setGalleryOpen] = useState(false);
   const [mobileReserveOpen, setMobileReserveOpen] = useState(false);
 
-  // Reservation state
-  const [selectedMeal, setSelectedMeal] = useState<string | null>(null);
-  const [selectedTime, setSelectedTime] = useState<string | null>(null);
-  const [guestCount, setGuestCount] = useState(1);
-  const [guestName, setGuestName] = useState('');
-  const [phone, setPhone] = useState('');
-  const [reserving, setReserving] = useState(false);
-  const [reservationDone, setReservationDone] = useState(false);
-  const [reservationError, setReservationError] = useState('');
-
-  const DAY_NAMES = [
-    'sunday',
-    'monday',
-    'tuesday',
-    'wednesday',
-    'thursday',
-    'friday',
-    'saturday',
-  ] as const;
+  // Reservation state now lives in <ReservationForm>, which is shared with the
+  // menu page.
   const workingHours = restaurant.working_hours ?? [];
-  const selectedDayName = selectedDate
-    ? DAY_NAMES[selectedDate.getDay()]
-    : null;
-  const workingDay = workingHours.find((d) => d.day === selectedDayName);
-  const currentMeal = workingDay?.meals.find((m) => m.type === selectedMeal);
-
-  const formatDate = (d: Date) =>
-    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-
-  const handleReservation = async () => {
-    if (!selectedDate || !selectedTime || !guestName || !phone) return;
-    setReserving(true);
-    setReservationError('');
-
-    // Build the reservation message (date, meal time, hour, guest details)
-    // and open the restaurant's WhatsApp chat with it pre-filled.
-    const mealLabel = currentMeal?.name ?? selectedMeal ?? '';
-    const message = [
-      `🍽 ${restaurant.title} — yeni masa rezervasiyası`,
-      `📅 Tarix: ${formatDate(selectedDate)}`,
-      `🕒 Yemək vaxtı: ${mealLabel}`,
-      `⏰ Saat: ${selectedTime}`,
-      `👥 Qonaq sayı: ${guestCount}`,
-      `🙍 Ad: ${guestName}`,
-      `📞 Telefon: ${phone}`,
-    ].join('\n');
-    // Opened synchronously within the click handler to avoid pop-up blocking.
-    window.open(
-      `https://wa.me/${RESERVATION_WHATSAPP}?text=${encodeURIComponent(message)}`,
-      '_blank',
-    );
-
-    // Best-effort: also record the reservation in the backend so it appears in
-    // the admin panel. A failure here must not block the WhatsApp flow.
-    try {
-      await reservationService.create({
-        restoran_id: restaurant.id,
-        date: formatDate(selectedDate),
-        time_slot: selectedMeal!,
-        time: selectedTime,
-        guest_count: guestCount,
-        guest_names: guestName,
-        phone,
-      });
-    } catch {
-      // ignore — WhatsApp is the primary channel for now
-    } finally {
-      setReserving(false);
-      setReservationDone(true);
-    }
-  };
 
   const openFeedback = () => {
     if (user) {
@@ -395,16 +494,6 @@ export default function RestaurantDetail({
       setFeedbackSurname(parts.slice(1).join(' '));
     }
     setFeedbackOpen(true);
-  };
-
-  const resetReservation = () => {
-    setReservationDone(false);
-    setSelectedDate(undefined);
-    setSelectedMeal(null);
-    setSelectedTime(null);
-    setGuestName('');
-    setPhone('');
-    setGuestCount(1);
   };
 
   useEffect(() => {
@@ -434,41 +523,10 @@ export default function RestaurantDetail({
     };
   }, [mobileReserveOpen]);
 
-  // Close the mobile reservation sheet automatically once a booking succeeds
-  useEffect(() => {
-    if (reservationDone) setMobileReserveOpen(false);
-  }, [reservationDone]);
-
-  // Keyboard navigation for the menu image lightbox (← → to scroll, Esc to close)
-  useEffect(() => {
-    if (!menuLightbox) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'ArrowLeft') {
-        setMenuLightbox(
-          (prev) =>
-            prev && {
-              ...prev,
-              index: (prev.index - 1 + prev.images.length) % prev.images.length,
-            },
-        );
-      } else if (e.key === 'ArrowRight') {
-        setMenuLightbox(
-          (prev) =>
-            prev && {
-              ...prev,
-              index: (prev.index + 1) % prev.images.length,
-            },
-        );
-      } else if (e.key === 'Escape') {
-        setMenuLightbox(null);
-      }
-    };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [menuLightbox]);
-
   const toggleImpression = (id: number) =>
-    setSelectedImpressionId((prev) => (prev === id ? null : id));
+    setSelectedImpressionIds((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
+    );
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -491,7 +549,7 @@ export default function RestaurantDetail({
         restoran_id: restaurant.id,
         rate: feedbackRating,
         recommed_friends: feedbackRecommend ? 1 : 0,
-        impression_id: selectedImpressionId,
+        impression_ids: selectedImpressionIds,
         galleries: uploadedFiles,
         name: feedbackName,
         surname: feedbackSurname,
@@ -504,7 +562,7 @@ export default function RestaurantDetail({
       setFeedbackText('');
       setFeedbackName('');
       setFeedbackSurname('');
-      setSelectedImpressionId(null);
+      setSelectedImpressionIds([]);
       setUploadedImages([]);
       setUploadedFiles([]);
     } finally {
@@ -540,192 +598,41 @@ export default function RestaurantDetail({
 
   // Reservation flow body — shared between the desktop sticky card and the
   // mobile bottom sheet so both stay perfectly in sync.
-  const renderReservationBody = () =>
-    reservationDone ? (
-      <div className="p-8 flex flex-col items-center text-center gap-3">
-        <CheckCircle2 className="h-12 w-12 text-green-500" />
-        <p className="font-semibold text-gray-900 text-lg">
-          {t.reservationConfirmed}
-        </p>
-        <p className="text-sm text-gray-500">{t.seeYouAt(restaurant.title)}</p>
-        <button
-          onClick={resetReservation}
-          className="mt-2 text-sm text-[#006653] underline underline-offset-2">
-          {t.makeAnother}
-        </button>
-      </div>
-    ) : (
-      <>
-        {/* Step 1 — Date */}
-        <div className="p-4 border-b border-gray-100">
-          <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-widest mb-3">
-            {t.step1}
-          </p>
-          <DayPicker
-            mode="single"
-            locale={dpLocale}
-            style={
-              {
-                '--rdp-accent-color': '#006653',
-                '--rdp-accent-background-color': '#eefae1',
-                '--rdp-today-color': '#006653',
-              } as React.CSSProperties
-            }
-            selected={selectedDate}
-            onSelect={(date) => {
-              setSelectedDate(date);
-              setSelectedMeal(null);
-              setSelectedTime(null);
-            }}
-            disabled={(date) => {
-              const today = new Date();
-              today.setHours(0, 0, 0, 0);
-              if (date < today) return true;
-              if (!workingHours.length) return false;
-              const dn = DAY_NAMES[date.getDay()];
-              return !workingHours.find((d) => d.day === dn)?.is_open;
-            }}
-          />
-        </div>
-
-        {/* Step 2 — Meal type */}
-        {selectedDate &&
-          workingDay &&
-          (workingDay.is_open ? (
-            <div className="p-4 border-b border-gray-100">
-              <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-widest mb-3">
-                {t.step2}
-              </p>
-              <div className="flex flex-wrap gap-2">
-                {workingDay.meals.map((meal) => (
-                  <button
-                    key={meal.type}
-                    onClick={() => {
-                      setSelectedMeal(meal.type);
-                      setSelectedTime(null);
-                    }}
-                    className={`px-4 py-2 rounded-lg text-sm font-medium border transition-colors ${
-                      selectedMeal === meal.type
-                        ? 'bg-[#006653] text-white border-[#006653]'
-                        : 'border-gray-200 text-gray-700 hover:border-[#006653] hover:text-[#006653]'
-                    }`}>
-                    {meal.name}
-                  </button>
-                ))}
-              </div>
-            </div>
-          ) : (
-            <div className="p-4 text-center text-sm text-gray-500 bg-gray-50 border-b border-gray-100">
-              {t.closedDay}
-            </div>
-          ))}
-
-        {/* Step 3 — Time slot */}
-        {selectedMeal && currentMeal && (
-          <div className="p-4 border-b border-gray-100">
-            <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-widest mb-3">
-              {t.step3}
-            </p>
-            <div className="grid grid-cols-3 gap-2">
-              {currentMeal.hours.map((h) => (
-                <button
-                  key={h}
-                  onClick={() => setSelectedTime(h)}
-                  className={`py-2 text-sm font-medium rounded-lg border transition-colors ${
-                    selectedTime === h
-                      ? 'bg-[#006653] text-white border-[#006653]'
-                      : 'border-gray-200 text-gray-600 hover:border-[#006653] hover:text-[#006653]'
-                  }`}>
-                  {h}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Step 4 — Guest details */}
-        {selectedTime && (
-          <div className="p-4 space-y-3">
-            <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-widest">
-              {t.step4}
-            </p>
-
-            <div>
-              <label className="flex items-center gap-1.5 text-xs font-medium text-gray-600 mb-1.5">
-                <Users className="h-3.5 w-3.5" /> {t.guests}
-              </label>
-              <input
-                type="number"
-                min={1}
-                max={50}
-                value={guestCount}
-                onChange={(e) =>
-                  setGuestCount(Math.max(1, Number(e.target.value)))
-                }
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#006653]/30 focus:border-[#006653]"
-              />
-            </div>
-
-            <div>
-              <label className="text-xs font-medium text-gray-600 mb-1.5 block">
-                {t.guestNameLabel}
-              </label>
-              <input
-                type="text"
-                placeholder={t.guestNamePlaceholder}
-                value={guestName}
-                onChange={(e) =>
-                  setGuestName(
-                    e.target.value.replace(/[^a-zA-ZÀ-ÿğüşıöçĞÜŞİÖÇ\s]/g, ''),
-                  )
-                }
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#006653]/30 focus:border-[#006653]"
-              />
-            </div>
-
-            <div>
-              <label className="flex items-center gap-1.5 text-xs font-medium text-gray-600 mb-1.5">
-                <Phone className="h-3.5 w-3.5" /> {t.phoneLabel}
-              </label>
-              <input
-                type="tel"
-                placeholder={t.phonePlaceholder}
-                value={phone}
-                onChange={(e) => setPhone(e.target.value.replace(/\D/g, ''))}
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#006653]/30 focus:border-[#006653]"
-              />
-            </div>
-
-            {reservationError && (
-              <p className="text-red-500 text-xs">{reservationError}</p>
-            )}
-
-            <button
-              onClick={handleReservation}
-              disabled={reserving || !guestName.trim() || !phone.trim()}
-              className="w-full py-3 bg-[#9fe870] hover:bg-[#8fdc5c] disabled:opacity-50 disabled:cursor-not-allowed text-[#14532d] font-semibold rounded-lg transition-colors">
-              {reserving ? t.booking : t.bookTable}
-            </button>
-          </div>
-        )}
-      </>
-    );
-
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Breadcrumb */}
       <div className="bg-white border-b">
         <div className="max-w-7xl mx-auto px-4 py-3">
           <div className="flex items-center gap-2 text-sm text-gray-600">
-            <Link href={`/${lang}`}>
+            <Link href={`/${homeLang(lang)}`}>
               <Home className="h-4 w-4 hover:text-[#006653]" />
             </Link>
             <ChevronRight className="h-4 w-4" />
-            <Link
-              href={`/${lang}/places`}
-              className="hover:text-[#006653] transition-colors">
-              {t.places}
-            </Link>
+            {foreignCountryPath ? (
+              <>
+                <Link
+                  href={foreignCountryPath}
+                  className="hover:text-[#006653] transition-colors">
+                  {restaurant.country_name}
+                </Link>
+                {foreignCityPath && restaurant.city_name && (
+                  <>
+                    <ChevronRight className="h-4 w-4" />
+                    <Link
+                      href={foreignCityPath}
+                      className="hover:text-[#006653] transition-colors">
+                      {restaurant.city_name}
+                    </Link>
+                  </>
+                )}
+              </>
+            ) : (
+              <Link
+                href={`/${homeLang(lang)}/places`}
+                className="hover:text-[#006653] transition-colors">
+                {t.places}
+              </Link>
+            )}
             <ChevronRight className="h-4 w-4" />
             <span className="text-gray-900 font-medium truncate max-w-[200px]">
               {restaurant.title}
@@ -754,6 +661,13 @@ export default function RestaurantDetail({
                   <div className="w-full h-full bg-gray-200 flex items-center justify-center">
                     <span className="text-gray-400">{t.noImage}</span>
                   </div>
+                )}
+
+                {/* Google Places photos must carry their author's name. */}
+                {currentImageIndex === 0 && restaurant.image && restaurant.image_credit && (
+                  <span className="absolute bottom-2 left-2 z-10 max-w-[80%] truncate rounded bg-black/55 px-2 py-0.5 text-[11px] text-white/90 pointer-events-none">
+                    © {restaurant.image_credit}
+                  </span>
                 )}
 
                 {/* Favorite (wishlist) — top-right overlay */}
@@ -872,6 +786,17 @@ export default function RestaurantDetail({
                 </div>
               </div>
 
+              {/* View menu — opens the restaurant's dedicated menu page */}
+              {hasMenu && (
+                <Link
+                  href={menuHref}
+                  aria-label={t.viewMenu}
+                  className="mb-4 inline-flex w-full sm:w-auto items-center justify-center gap-2 px-5 py-3 bg-[#006653] hover:bg-[#00543f] text-white font-semibold rounded-xl shadow-sm transition-colors">
+                  <UtensilsCrossed className="h-5 w-5" />
+                  {t.viewMenu}
+                </Link>
+              )}
+
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-gray-700 mb-4 pt-4 border-t border-gray-100">
                 {(workingHours.length > 0 || restaurant.open_from) && (
                   <OpeningHours
@@ -971,164 +896,6 @@ export default function RestaurantDetail({
                       )}
                     </div>
                   ))}
-                </div>
-              </div>
-            )}
-
-            {/* Structured menu (categories -> dishes + price) */}
-            {restaurant.menu_categories &&
-              restaurant.menu_categories.length > 0 && (
-                <div className="bg-white rounded-2xl p-6 shadow-sm">
-                  <div className="flex items-center gap-2.5 mb-5">
-                    <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#eefae1]">
-                      <UtensilsCrossed className="h-5 w-5 text-[#006653]" />
-                    </span>
-                    <h2 className="text-xl font-bold text-gray-900">{t.menu}</h2>
-                  </div>
-                  <div className="space-y-6">
-                    {restaurant.menu_categories.map((category) => (
-                      <div key={category.id}>
-                        <h3 className="text-base font-semibold text-[#006653] mb-2.5">
-                          {category.name}
-                        </h3>
-                        <ul className="divide-y divide-gray-100">
-                          {category.dishes.map((dish) => (
-                            <li
-                              key={dish.id}
-                              className="flex items-start justify-between gap-4 py-2">
-                              <div className="min-w-0">
-                                <span className="text-sm text-gray-800">
-                                  {dish.name}
-                                </span>
-                                {dish.description && (
-                                  <p className="text-xs text-gray-400 mt-0.5">
-                                    {dish.description}
-                                  </p>
-                                )}
-                              </div>
-                              {dish.price !== null && (
-                                <span className="shrink-0 text-sm font-semibold text-gray-900 whitespace-nowrap">
-                                  {dish.price} ₼
-                                </span>
-                              )}
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-            {/* Menu */}
-            {restaurant.menus.length > 0 && (
-              <div className="bg-white rounded-2xl p-6 shadow-sm">
-                <div className="flex items-center gap-2.5 mb-4">
-                  <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#eefae1]">
-                    <UtensilsCrossed className="h-5 w-5 text-[#006653]" />
-                  </span>
-                  <h2 className="text-xl font-bold text-gray-900">{t.menu}</h2>
-                </div>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                  {(() => {
-                    let imgOffset = 0;
-                    return restaurant.menus.map((menu) => {
-                      const hasImage = menu.images && menu.images.length > 0;
-                      const startIndex = imgOffset;
-                      imgOffset += menu.images?.length ?? 0;
-                      return (
-                        <div
-                          key={menu.id}
-                          onClick={() =>
-                            hasImage &&
-                            setMenuLightbox({
-                              images: allMenuImages,
-                              index: startIndex,
-                            })
-                          }
-                          className={`rounded-xl overflow-hidden border border-gray-100 shadow-sm bg-gray-50 ${hasImage ? 'cursor-pointer hover:shadow-md transition-shadow' : ''}`}>
-                          {hasImage ? (
-                            <div className="relative aspect-[4/3] w-full">
-                              <Image
-                                src={menu.images[0]}
-                                alt={menu.title || 'Menu'}
-                                fill
-                                className="object-cover"
-                              />
-                            </div>
-                          ) : (
-                            <div className="aspect-[4/3] w-full flex items-center justify-center bg-gray-100">
-                              <Star className="h-8 w-8 text-gray-300" />
-                            </div>
-                          )}
-                        </div>
-                      );
-                    });
-                  })()}
-                </div>
-              </div>
-            )}
-
-            {/* Menu image lightbox */}
-            {menuLightbox && (
-              <div
-                className="fixed inset-0 z-[100] bg-black/80 flex items-center justify-center p-4 !m-0"
-                onClick={() => setMenuLightbox(null)}>
-                <div
-                  className="relative max-w-2xl w-full"
-                  onClick={(e) => e.stopPropagation()}>
-                  <button
-                    onClick={() => setMenuLightbox(null)}
-                    aria-label="Close"
-                    className="absolute -top-10 right-0 text-white hover:text-gray-300">
-                    <X className="h-7 w-7" />
-                  </button>
-                  <div className="relative aspect-[4/3] w-full rounded-xl overflow-hidden">
-                    <Image
-                      src={menuLightbox.images[menuLightbox.index]}
-                      alt=""
-                      fill
-                      className="object-contain"
-                    />
-
-                    {menuLightbox.images.length > 1 && (
-                      <>
-                        <button
-                          aria-label="Previous image"
-                          onClick={() =>
-                            setMenuLightbox(
-                              (prev) =>
-                                prev && {
-                                  ...prev,
-                                  index:
-                                    (prev.index - 1 + prev.images.length) %
-                                    prev.images.length,
-                                },
-                            )
-                          }
-                          className="absolute left-3 top-1/2 -translate-y-1/2 bg-white/20 hover:bg-white/40 text-white rounded-full p-2.5 transition-colors">
-                          <ChevronLeft className="h-6 w-6" />
-                        </button>
-                        <button
-                          aria-label="Next image"
-                          onClick={() =>
-                            setMenuLightbox(
-                              (prev) =>
-                                prev && {
-                                  ...prev,
-                                  index: (prev.index + 1) % prev.images.length,
-                                },
-                            )
-                          }
-                          className="absolute right-3 top-1/2 -translate-y-1/2 bg-white/20 hover:bg-white/40 text-white rounded-full p-2.5 transition-colors">
-                          <ChevronRight className="h-6 w-6" />
-                        </button>
-                        <span className="absolute bottom-3 left-1/2 -translate-x-1/2 bg-black/60 text-white text-sm px-3 py-1 rounded-full">
-                          {menuLightbox.index + 1} / {menuLightbox.images.length}
-                        </span>
-                      </>
-                    )}
-                  </div>
                 </div>
               </div>
             )}
@@ -1253,16 +1020,22 @@ export default function RestaurantDetail({
 
           {/* Right sidebar */}
           <div className="space-y-6 lg:sticky lg:top-6 self-start">
-            {/* Reservation card — desktop sticky sidebar */}
-            <div className="hidden lg:block bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm">
-              <div className="p-5 border-b border-gray-100 flex items-center gap-2">
-                <Calendar className="h-5 w-5 text-[#006653]" />
-                <h3 className="font-semibold text-gray-900 text-lg">
-                  {t.reserveTable}
-                </h3>
+            {/* Reservation card — desktop sticky sidebar (home country only) */}
+            {isHome && (
+              <div className="hidden lg:block bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm">
+                <div className="p-5 border-b border-gray-100 flex items-center gap-2">
+                  <Calendar className="h-5 w-5 text-[#006653]" />
+                  <h3 className="font-semibold text-gray-900 text-lg">
+                    {t.reserveTable}
+                  </h3>
+                </div>
+                <ReservationForm
+                  restaurant={restaurant}
+                  lang={lang}
+                  onDone={() => setMobileReserveOpen(false)}
+                />
               </div>
-              {renderReservationBody()}
-            </div>
+            )}
 
             {/* Quick info card */}
             <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-200">
@@ -1293,6 +1066,40 @@ export default function RestaurantDetail({
                       <span>{restaurant.address}</span>
                     )}
                   </div>
+                )}
+                {/* Abroad there is no booking form, so the contact facts are
+                    the page's call to action. */}
+                {!isHome && restaurant.phone && (
+                  <div className="flex gap-2">
+                    <Phone className="h-4 w-4 text-gray-400 flex-shrink-0 mt-0.5" />
+                    <a
+                      href={`tel:${restaurant.phone.replace(/[^\d+]/g, '')}`}
+                      className="hover:text-[#006653] underline underline-offset-2 transition-colors">
+                      {restaurant.phone}
+                    </a>
+                  </div>
+                )}
+                {!isHome && restaurant.website && (
+                  <div className="flex gap-2 min-w-0">
+                    <Globe className="h-4 w-4 text-gray-400 flex-shrink-0 mt-0.5" />
+                    <a
+                      href={restaurant.website}
+                      target="_blank"
+                      rel="nofollow noopener noreferrer"
+                      className="truncate hover:text-[#006653] underline underline-offset-2 transition-colors">
+                      {restaurant.website.replace(/^https?:\/\/(www\.)?/i, '').replace(/\/$/, '')}
+                    </a>
+                  </div>
+                )}
+                {/* OpenStreetMap data is ODbL: the page that shows it must credit it. */}
+                {restaurant.source === 'osm' && (
+                  <a
+                    href="https://www.openstreetmap.org/copyright"
+                    target="_blank"
+                    rel="nofollow noopener noreferrer"
+                    className="block text-xs text-gray-400 hover:text-[#006653] transition-colors">
+                    © OpenStreetMap contributors
+                  </a>
                 )}
                 {restaurant.categories.length > 0 && (
                   <div className="flex gap-2">
@@ -1338,12 +1145,33 @@ export default function RestaurantDetail({
               {restaurant.title}
             </p>
           </div>
-          <button
-            onClick={() => setMobileReserveOpen(true)}
-            className="flex items-center gap-2 px-5 py-3 bg-[#9fe870] hover:bg-[#8fdc5c] text-[#14532d] font-semibold rounded-xl transition-colors whitespace-nowrap">
-            <Calendar className="h-5 w-5" />
-            {t.reserveTable}
-          </button>
+          {hasMenu && (
+            <Link
+              href={menuHref}
+              aria-label={t.viewMenu}
+              className="flex items-center gap-2 px-4 py-3 border border-[#006653] text-[#006653] hover:bg-[#eefae1] font-semibold rounded-xl transition-colors whitespace-nowrap">
+              <UtensilsCrossed className="h-5 w-5" />
+              <span className="hidden sm:inline">{t.menu}</span>
+            </Link>
+          )}
+          {isHome ? (
+            <button
+              onClick={() => setMobileReserveOpen(true)}
+              className="flex items-center gap-2 px-5 py-3 bg-[#9fe870] hover:bg-[#8fdc5c] text-[#14532d] font-semibold rounded-xl transition-colors whitespace-nowrap">
+              <Calendar className="h-5 w-5" />
+              {t.reserveTable}
+            </button>
+          ) : (
+            restaurant.phone && (
+              // No booking flow abroad — the one useful action is a call.
+              <a
+                href={`tel:${restaurant.phone.replace(/[^\d+]/g, '')}`}
+                className="flex items-center gap-2 px-5 py-3 bg-[#9fe870] hover:bg-[#8fdc5c] text-[#14532d] font-semibold rounded-xl transition-colors whitespace-nowrap">
+                <Phone className="h-5 w-5" />
+                {restaurant.phone}
+              </a>
+            )
+          )}
         </div>
       </div>
 
@@ -1369,7 +1197,11 @@ export default function RestaurantDetail({
                 <X className="h-5 w-5 text-gray-500" />
               </button>
             </div>
-            {renderReservationBody()}
+            <ReservationForm
+                restaurant={restaurant}
+                lang={lang}
+                onDone={() => setMobileReserveOpen(false)}
+              />
           </div>
         </div>
       )}
@@ -1471,20 +1303,30 @@ export default function RestaurantDetail({
               </label>
 
               <div>
-                <p className="text-sm font-semibold text-gray-900 mb-3">
+                <p className="text-sm font-semibold text-gray-900 mb-1">
                   {t.whatImpressed}
+                </p>
+                <p className="text-xs text-gray-500 mb-3">
+                  {t.whatImpressedHint}
                 </p>
                 <div className="grid grid-cols-3 gap-2">
                   {impressions?.map((impression) => (
                     <button
                       key={impression.id}
+                      type="button"
+                      aria-pressed={selectedImpressionIds.includes(
+                        impression.id,
+                      )}
                       onClick={() => toggleImpression(impression.id)}
-                      className={`py-2 px-3 text-sm rounded-lg border transition-colors ${
-                        selectedImpressionId === impression.id
+                      className={`flex items-center justify-center gap-1 py-2 px-3 text-sm rounded-lg border transition-colors ${
+                        selectedImpressionIds.includes(impression.id)
                           ? 'border-teal-600 bg-teal-50 text-teal-700 font-medium'
                           : 'border-gray-300 text-gray-700 hover:border-gray-400'
                       }`}>
-                      {impression.title}
+                      {selectedImpressionIds.includes(impression.id) && (
+                        <Check className="h-3.5 w-3.5 shrink-0" />
+                      )}
+                      <span>{impression.title}</span>
                     </button>
                   ))}
                 </div>
@@ -1542,12 +1384,22 @@ export default function RestaurantDetail({
 
               <button
                 onClick={handleFeedbackSubmit}
-                disabled={feedbackSubmitting || !feedbackName.trim() || !feedbackSurname.trim()}
+                disabled={
+                  feedbackSubmitting ||
+                  !feedbackName.trim() ||
+                  !feedbackSurname.trim() ||
+                  selectedImpressionIds.length === 0
+                }
                 className="w-full py-3 bg-[#006653] hover:bg-[#00543f] disabled:opacity-60 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-colors">
                 {feedbackSubmitting ? t.submitting : t.submitFeedback}
               </button>
               {(!feedbackName.trim() || !feedbackSurname.trim()) && (
                 <p className="text-xs text-red-500 text-center -mt-3">{t.nameRequired}</p>
+              )}
+              {selectedImpressionIds.length === 0 && (
+                <p className="text-xs text-red-500 text-center -mt-3">
+                  {t.impressionRequired}
+                </p>
               )}
             </div>
           </div>

@@ -2,12 +2,15 @@ import BannerImg from '@/assets/images/banner.jpg';
 import SearchBarHeader from '@/components/Header/SearchBarHeader';
 import PopularChips from '@/components/Header/PopularChips';
 import Image from 'next/image';
+import { getT } from '@/lib/i18n';
 
 interface HeaderProps {
   lang: string;
 }
 
 const Header = ({ lang }: HeaderProps) => {
+  const t = getT(lang);
+
   return (
     <section className="pt-4 pb-6 md:pt-6 md:pb-10">
       <div className="wrapper">
@@ -25,16 +28,15 @@ const Header = ({ lang }: HeaderProps) => {
             {/* Left: copy + search */}
             <div className="text-white">
               <span className="inline-flex items-center gap-2 rounded-full border border-white/30 bg-white/10 px-4 py-1.5 text-sm font-medium backdrop-blur-sm">
-                🍽️ Bakının ən yaxşı masaları
+                🍽️ {t('hero.badge')}
               </span>
 
               <h1 className="mt-5 text-3xl font-bold leading-[1.1] tracking-tight sm:text-4xl lg:text-[52px]">
-                Bakıda ən yaxşı restoranı <br className="hidden sm:block" />
-                tap və rezerv et
+                {t('hero.titleLine1')} <br className="hidden sm:block" />
+                {t('hero.titleLine2')}
               </h1>
               <p className="mt-4 max-w-xl text-base text-white/85 md:text-lg">
-                Rayon və ya mətbəx üzrə axtar, masanı bir neçə saniyəyə rezerv et —
-                pulsuz və ani təsdiq.
+                {t('hero.subtitle')}
               </p>
 
               {/* Search */}
@@ -51,7 +53,7 @@ const Header = ({ lang }: HeaderProps) => {
               <div className="relative ml-auto aspect-[4/3] w-full max-w-[480px] overflow-hidden rounded-2xl shadow-2xl rotate-2">
                 <Image
                   src={BannerImg}
-                  alt="Bakı restoranları"
+                  alt={t('hero.imageAlt')}
                   fill
                   priority
                   sizes="480px"

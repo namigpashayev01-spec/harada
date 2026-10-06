@@ -22,6 +22,7 @@ import {
 import { SlidersHorizontal, Tag, X, Check } from 'lucide-react';
 import propertyService from '@/services/property.service';
 import { Property } from '@/types/restaurant';
+import { useT } from '@/context/TranlateContext';
 
 interface FilterSelection {
   properties: number[];
@@ -44,6 +45,7 @@ export default function FilterBar({
   onClearCategory,
   initial,
 }: FilterBarProps) {
+  const t = useT();
   const [properties, setProperties] = useState<Property[]>([]);
   const [selectedSubproperties, setSelectedSubproperties] = useState<
     Record<number, number>
@@ -134,7 +136,7 @@ export default function FilterBar({
   if (specialOffer)
     activePills.push({
       key: 'offer',
-      label: 'Endirimli',
+      label: t('filter.offer'),
       remove: toggleSpecialOffer,
     });
   properties.forEach((property) => {
@@ -171,11 +173,11 @@ export default function FilterBar({
       {/* Special offer */}
       <div>
         <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-400">
-          Təkliflər
+          {t('filter.offers')}
         </p>
         <button onClick={toggleSpecialOffer} className={chip(specialOffer)}>
           <Tag className="h-4 w-4" />
-          Endirimli
+          {t('filter.offer')}
           {specialOffer && <Check className="h-4 w-4" />}
         </button>
       </div>
@@ -223,7 +225,7 @@ export default function FilterBar({
           <DrawerTrigger asChild>
             <button className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-semibold text-gray-800 shadow-sm">
               <SlidersHorizontal className="h-4 w-4" />
-              Filtrlər
+              {t('filter.title')}
               {activeCount > 0 && (
                 <span className="ml-1 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-[#006653] px-1.5 text-xs font-bold text-white">
                   {activeCount}
@@ -233,7 +235,7 @@ export default function FilterBar({
           </DrawerTrigger>
           <DrawerContent className="max-h-[85vh]">
             <DrawerHeader className="flex flex-row items-center justify-between">
-              <DrawerTitle className="text-lg">Filtrlər</DrawerTitle>
+              <DrawerTitle className="text-lg">{t('filter.title')}</DrawerTitle>
               <DrawerClose asChild>
                 <button className="rounded-full p-1.5 text-gray-500 hover:bg-gray-100">
                   <X className="h-5 w-5" />
@@ -248,11 +250,11 @@ export default function FilterBar({
                 onClick={clearAll}
                 disabled={activeCount === 0}
                 className="flex-1 rounded-xl border border-gray-200 py-3 text-sm font-semibold text-gray-700 disabled:opacity-40">
-                Təmizlə
+                {t('filter.clear')}
               </button>
               <DrawerClose asChild>
                 <button className="flex-1 rounded-xl bg-[#9fe870] py-3 text-sm font-semibold text-[#14532d] hover:bg-[#8fdc5c]">
-                  Nəticələri göstər
+                  {t('filter.apply')}
                 </button>
               </DrawerClose>
             </DrawerFooter>
@@ -264,12 +266,12 @@ export default function FilterBar({
       <div className="hidden items-center gap-3 overflow-x-auto md:flex">
         <span className="flex shrink-0 items-center gap-1.5 text-sm font-semibold text-gray-700">
           <SlidersHorizontal className="h-4 w-4" />
-          Filtrlər:
+          {t('filter.labelInline')}
         </span>
 
         <button onClick={toggleSpecialOffer} className={chip(specialOffer)}>
           <Tag className="h-4 w-4" />
-          Endirimli
+          {t('filter.offer')}
         </button>
 
         {properties.map((property) =>
@@ -287,7 +289,7 @@ export default function FilterBar({
                 {property.icon && !property.icon.endsWith('/storage') && (
                   <Image
                     src={property.icon}
-                    alt={property.title || 'Property'}
+                    alt={property.title || t('common.property')}
                     width={16}
                     height={16}
                     className={`h-4 w-4 object-contain ${selectedSubproperties[property.id] ? 'brightness-0 invert' : ''}`}
@@ -313,7 +315,7 @@ export default function FilterBar({
               {property.icon && !property.icon.endsWith('/storage') && (
                 <Image
                   src={property.icon}
-                  alt={property.title || 'Property'}
+                  alt={property.title || t('common.property')}
                   width={16}
                   height={16}
                   className={`h-4 w-4 object-contain ${activeToggles.has(property.id) ? 'brightness-0 invert' : ''}`}
@@ -329,7 +331,7 @@ export default function FilterBar({
             onClick={clearAll}
             className="ml-1 inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full px-3 py-2 text-sm font-medium text-[#006653] hover:bg-[#006653]/10">
             <X className="h-4 w-4" />
-            Təmizlə ({activeCount})
+            {t('filter.clearCount', { n: activeCount })}
           </button>
         )}
       </div>
@@ -338,7 +340,7 @@ export default function FilterBar({
       {activePills.length > 0 && (
         <div className="mt-3 flex flex-wrap items-center gap-2 px-4 md:px-0">
           <span className="text-xs font-medium text-gray-500">
-            Seçilmiş filtrlər:
+            {t('filter.activeLabel')}
           </span>
           {activePills.map((pill) => (
             <button
@@ -352,7 +354,7 @@ export default function FilterBar({
           <button
             onClick={clearAll}
             className="text-xs font-semibold text-[#006653] underline-offset-2 hover:underline">
-            Hamısını sil
+            {t('filter.clearAll')}
           </button>
         </div>
       )}

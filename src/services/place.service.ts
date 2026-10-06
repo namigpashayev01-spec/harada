@@ -1,5 +1,9 @@
 import apiClient from '@/api';
-import { NearbyRestaurantsResponse, RestaurantDetailResponse } from '@/types/restaurant';
+import {
+  NearbyRestaurantsResponse,
+  RestaurantDetailResponse,
+  SitemapRestaurantsResponse,
+} from '@/types/restaurant';
 import { PopularPlacesResponse } from '@/types/place';
 
 interface NearbyRestaurantsParams {
@@ -16,6 +20,30 @@ interface NearbyRestaurantsParams {
   is_special_offer?: boolean;
   page?: number;
   per_page?: number;
+}
+
+export interface SuggestCuisine {
+  id: number;
+  title: string;
+  count: number;
+}
+
+export interface SuggestRestaurant {
+  id: number;
+  title: string;
+  address: string | null;
+  slug: string;
+}
+
+export interface SuggestDish {
+  name: string;
+  count: number;
+}
+
+export interface SearchSuggestResponse {
+  cuisines: SuggestCuisine[];
+  dishes: SuggestDish[];
+  restaurants: SuggestRestaurant[];
 }
 
 const placeService = {
@@ -56,8 +84,26 @@ const placeService = {
     );
   },
 
-  getRestaurantBySlug: (slug: string) =>
-    apiClient.get<RestaurantDetailResponse>(`/restoran/${slug}`),
+  // `lang` must be passed from server components (generateMetadata): the shared
+  // apiClient default set by setLang() only reflects the browser's language, so
+  // without it the API falls back to `az` and every locale gets Azerbaijani meta.
+  /** Axtarış qutusunun təklifləri: restoran adları + mətbəxlər. */
+  searchSuggest: (q: string) =>
+    apiClient.get<SearchSuggestResponse>(
+      `/search-suggest?q=${encodeURIComponent(q)}`,
+    ),
+
+  getRestaurantBySlug: (slug: string, lang?: string) =>
+    apiClient.get<RestaurantDetailResponse>(
+      `/restoran/${slug}`,
+      lang ? { headers: { 'Accept-Language': lang } } : undefined,
+    ),
+
+  // Slug-only listing of every published restaurant, used by the sitemap.
+  // The paginated /nearby-restaurants endpoint loads menus and working hours
+  // per row and takes ~50s per page, which times out during generation.
+  getRestaurantSlugs: () =>
+    apiClient.get<SitemapRestaurantsResponse>('/sitemap-restaurants'),
 };
 
 export default placeService;

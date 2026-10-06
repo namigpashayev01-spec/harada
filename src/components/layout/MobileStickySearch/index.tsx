@@ -3,12 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Search } from 'lucide-react';
-
-const DICT: Record<string, { placeholder: string; button: string }> = {
-  az: { placeholder: 'Restoran və ya mətbəx axtar', button: 'Axtar' },
-  en: { placeholder: 'Search restaurants or cuisines', button: 'Search' },
-  ru: { placeholder: 'Поиск ресторанов или кухонь', button: 'Поиск' },
-};
+import { useT } from '@/context/TranlateContext';
 
 /**
  * Slim search bar for mobile that slides in from the top once the user
@@ -18,7 +13,7 @@ const DICT: Record<string, { placeholder: string; button: string }> = {
 export default function MobileStickySearch() {
   const { lang } = useParams<{ lang: string }>();
   const router = useRouter();
-  const t = DICT[lang] ?? DICT.az;
+  const t = useT();
   const [q, setQ] = useState('');
   const [show, setShow] = useState(false);
 
@@ -56,14 +51,14 @@ export default function MobileStickySearch() {
             value={q}
             onChange={(e) => setQ(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && submit()}
-            placeholder={t.placeholder}
+            placeholder={t('search.mobilePlaceholder')}
             className="flex-1 bg-transparent py-1.5 text-sm text-gray-800 placeholder:text-gray-400 outline-none"
           />
           <button
             type="button"
             onClick={submit}
             className="shrink-0 rounded-full bg-[#9fe870] px-4 py-1.5 text-xs font-semibold text-[#14532d] transition-colors hover:bg-[#8fdc5c]">
-            {t.button}
+            {t('search.submitShort')}
           </button>
         </div>
       </div>

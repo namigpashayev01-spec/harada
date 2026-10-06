@@ -43,6 +43,43 @@ const FB_DICT: Record<string, FbDict> = {
   },
 };
 
+// Foreign-section languages (src/lib/locales.ts).
+FB_DICT.sr = {
+  reviews: 'Recenzije',
+  noReviews: 'Još nema recenzija. Napišite prvu.',
+  basedOn: (n) => `Na osnovu ${n} recenzija`,
+  loadMore: (n) => `Prikaži još (preostalo ${n})`,
+  writeReview: 'Napiši recenziju',
+};
+FB_DICT.nl = {
+  reviews: 'Beoordelingen',
+  noReviews: 'Nog geen beoordelingen. Schrijf de eerste.',
+  basedOn: (n) => `Op basis van ${n} beoordelingen`,
+  loadMore: (n) => `Meer tonen (nog ${n})`,
+  writeReview: 'Beoordeling schrijven',
+};
+FB_DICT.uz = {
+  reviews: 'Sharhlar',
+  noReviews: "Hali sharhlar yo'q. Birinchi sharhni siz yozing.",
+  basedOn: (n) => `${n} ta sharh asosida`,
+  loadMore: (n) => `Yana ko'rsatish (${n} ta qoldi)`,
+  writeReview: 'Sharh yozish',
+};
+FB_DICT.fr = {
+  reviews: 'Avis',
+  noReviews: 'Pas encore d’avis. Soyez le premier à en écrire un.',
+  basedOn: (n) => `Sur la base de ${n} avis`,
+  loadMore: (n) => `Afficher plus (${n} restants)`,
+  writeReview: 'Écrire un avis',
+};
+FB_DICT.lv = {
+  reviews: 'Atsauksmes',
+  noReviews: 'Atsauksmju vēl nav. Uzrakstiet pirmo.',
+  basedOn: (n) => `Pamatojoties uz ${n} atsauksmēm`,
+  loadMore: (n) => `Rādīt vairāk (atlikušas ${n})`,
+  writeReview: 'Rakstīt atsauksmi',
+};
+
 const RATE_ORDER = [5, 4, 3, 2, 1];
 
 const initials = (name: string, surname: string) =>
@@ -71,7 +108,7 @@ export default function FeedbackList({
   const [data, setData] = useState<FeedbackListResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [visible, setVisible] = useState(PAGE_SIZE);
-  const t = FB_DICT[lang] ?? FB_DICT.az;
+  const t = FB_DICT[lang] ?? FB_DICT.en;
 
   useEffect(() => {
     let cancelled = false;

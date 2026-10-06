@@ -20,7 +20,7 @@ const DICT: Record<string, { title: string; subtitle: string }> = {
 
 export default function SettingsPageClient() {
   const { lang } = useParams<{ lang: string }>();
-  const t = DICT[lang] ?? DICT.az;
+  const t = DICT[lang] ?? DICT.en;
 
   return (
     <div>

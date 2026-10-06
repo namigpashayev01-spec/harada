@@ -59,6 +59,13 @@ export type RestaurantRegisterDict = {
 
   optional: string;
   requiredErr: string;
+  loginRequired: string;
+  submitError: string;
+  loginCta: string;
+  alreadyListedTitle: string;
+  alreadyListedText: string;
+  alreadyListedCta: string;
+  positionLabel: string;
   submit: string;
   submitting: string;
   successTitle: string;
@@ -67,7 +74,7 @@ export type RestaurantRegisterDict = {
 };
 
 // Dəstək əlaqə məlumatları (formanı doldurarkən kömək üçün)
-export const SUPPORT_PHONE = '+994 77 323 12 07';
+export const SUPPORT_PHONE = '+994 77 315 15 80';
 export const SUPPORT_EMAIL = 'partner@diny.az';
 
 // Bakı rayonları — bütün dillərdə eyni saxlanılır (xüsusi adlar)
@@ -151,6 +158,15 @@ const dict: Record<'az' | 'en' | 'ru', RestaurantRegisterDict> = {
     websitePh: '@restoran və ya sayt ünvanı',
     optional: 'könüllü',
     requiredErr: 'Zəhmət olmasa məcburi (*) sahələri doldurun.',
+    loginRequired:
+      'Müraciət göndərmək üçün hesabınıza daxil olun — restoranı sizin adınıza bağlaya bilməyimiz üçün lazımdır.',
+    submitError: 'Müraciət göndərilə bilmədi. Bir az sonra yenidən yoxlayın.',
+    loginCta: 'Daxil ol',
+    alreadyListedTitle: 'Restoranınız artıq saytdadır?',
+    alreadyListedText:
+      'Saytda 1700-dən çox restoran var. Əgər sizinki artıq buradadırsa, yenidən qeydiyyatdan keçməyin — sadəcə sahibliyi tələb edin.',
+    alreadyListedCta: 'Restoranımı tap və sahibliyi tələb et',
+    positionLabel: 'Restorandakı vəzifəniz',
     submit: 'Müraciəti göndər',
     submitting: 'Göndərilir...',
     successTitle: 'Müraciətiniz qəbul edildi!',
@@ -222,6 +238,15 @@ const dict: Record<'az' | 'en' | 'ru', RestaurantRegisterDict> = {
     websitePh: '@restaurant or site URL',
     optional: 'optional',
     requiredErr: 'Please fill in the required (*) fields.',
+    loginRequired:
+      'Please sign in to send your application — we need an account to link the restaurant to.',
+    submitError: 'The application could not be sent. Please try again shortly.',
+    loginCta: 'Sign in',
+    alreadyListedTitle: 'Already listed on the site?',
+    alreadyListedText:
+      'We already list over 1,700 restaurants. If yours is one of them, there is no need to register again — just claim it.',
+    alreadyListedCta: 'Find my restaurant and claim it',
+    positionLabel: 'Your role at the restaurant',
     submit: 'Send application',
     submitting: 'Sending...',
     successTitle: 'Your application has been received!',
@@ -293,6 +318,15 @@ const dict: Record<'az' | 'en' | 'ru', RestaurantRegisterDict> = {
     websitePh: '@ресторан или адрес сайта',
     optional: 'необязательно',
     requiredErr: 'Пожалуйста, заполните обязательные (*) поля.',
+    loginRequired:
+      'Войдите в аккаунт, чтобы отправить заявку — он нужен, чтобы привязать ресторан к вам.',
+    submitError: 'Не удалось отправить заявку. Попробуйте чуть позже.',
+    loginCta: 'Войти',
+    alreadyListedTitle: 'Ваш ресторан уже на сайте?',
+    alreadyListedText:
+      'На сайте уже более 1700 ресторанов. Если ваш среди них, регистрироваться заново не нужно — просто заявите права.',
+    alreadyListedCta: 'Найти мой ресторан',
+    positionLabel: 'Ваша должность в ресторане',
     submit: 'Отправить заявку',
     submitting: 'Отправка...',
     successTitle: 'Ваша заявка принята!',

@@ -63,7 +63,7 @@ const resolveSlug = (fav: FavoriteRestaurant, lang: string): string => {
 export default function FavoritesPage() {
   const queryClient = useQueryClient();
   const { lang } = useParams<{ lang: string }>();
-  const t = DICT[lang] ?? DICT.az;
+  const t = DICT[lang] ?? DICT.en;
   const [search, setSearch] = useState("");
 
   const { data, isLoading, isError } = useQuery({

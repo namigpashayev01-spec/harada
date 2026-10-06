@@ -19,6 +19,7 @@ import authService, {
 } from '@/services/auth.service';
 import userService from '@/services/user.service';
 import { authStorage } from '@/lib/authStorage';
+import { clearUser, identifyUser } from '@/lib/analytics';
 
 type AuthState = {
   user: AuthUser | null;
@@ -27,7 +28,7 @@ type AuthState = {
   login: (payload: LoginPayload) => Promise<void>;
   register: (payload: RegisterPayload) => Promise<void>;
   logout: () => Promise<void>;
-  refreshUser: () => Promise<void>;
+  refreshUser: () => Promise<AuthUser | null>;
   setUser: (user: AuthUser | null) => void;
 };
 
@@ -95,14 +96,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const refreshUser = useCallback(async () => {
     if (!authStorage.getAccessToken()) {
       setUser(null);
-      return;
+      clearUser();
+      return null;
     }
     try {
       const res = await userService.getProfile();
       const profile = pickUser(res) ?? null;
       setUser(profile);
+      if (profile) identifyUser(profile);
+      else clearUser();
+      return profile;
     } catch {
       setUser(null);
+      clearUser();
+      return null;
     }
   }, []);
 
@@ -116,6 +123,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     apiClient.setAuthFailedHandler(() => {
       setUser(null);
+      clearUser();
       const lang = langRef.current || 'en';
       router.push(`/${lang}/login`);
     });
@@ -128,11 +136,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const { access, refresh, user: returnedUser } = extractTokens(res);
       if (!access) throw new Error('Login failed: no access token returned');
       authStorage.setTokens(access, refresh);
-      if (returnedUser) {
-        setUser(returnedUser);
-      } else {
-        await refreshUser();
-      }
+      let signedIn = returnedUser ?? null;
+      if (signedIn) setUser(signedIn);
+      else signedIn = await refreshUser();
+      if (signedIn) identifyUser(signedIn, 'login');
     },
     [refreshUser],
   );
@@ -143,11 +150,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const { access, refresh, user: returnedUser } = extractTokens(res);
       if (access) {
         authStorage.setTokens(access, refresh);
-        if (returnedUser) {
-          setUser(returnedUser);
-        } else {
-          await refreshUser();
-        }
+        let registered = returnedUser ?? null;
+        if (registered) setUser(registered);
+        else registered = await refreshUser();
+        if (registered) identifyUser(registered, 'sign_up');
       }
     },
     [refreshUser],
@@ -161,6 +167,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
     authStorage.clear();
     setUser(null);
+    clearUser();
     const lang = langRef.current || 'en';
     router.push(`/${lang}/login`);
   }, [router]);

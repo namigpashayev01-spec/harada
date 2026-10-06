@@ -81,7 +81,7 @@ const DICT: Record<string, Dict> = {
 export default function SettingsForm() {
   const { user, refreshUser, isInitializing } = useAuth();
   const { lang } = useParams<{ lang: string }>();
-  const t = DICT[lang] ?? DICT.az;
+  const t = DICT[lang] ?? DICT.en;
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [name, setName] = useState("");

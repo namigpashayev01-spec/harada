@@ -2,6 +2,12 @@ export interface ISlug {
   az: string;
   en: string;
   ru: string;
+  // Foreign-section languages — present only for that country's restaurants.
+  sr?: string | null;
+  nl?: string | null;
+  uz?: string | null;
+  fr?: string | null;
+  lv?: string | null;
 }
 
 export interface SubProperty {

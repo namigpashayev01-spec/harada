@@ -19,7 +19,7 @@ const PopularChips = ({ lang }: { lang: string }) => {
 
   return (
     <div className="mt-5 flex flex-wrap items-center gap-2.5">
-      <span className="text-sm text-white/75">{LABELS[lang] ?? LABELS.az}</span>
+      <span className="text-sm text-white/75">{LABELS[lang] ?? LABELS.en}</span>
       {categories.map((category) => (
         <Link
           key={category.id}

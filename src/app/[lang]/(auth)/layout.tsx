@@ -2,6 +2,7 @@ import type React from 'react';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import { VALID_LANGUAGES } from '../../../../middleware';
+import { t } from '@/lib/i18n';
 
 export default async function AuthLayout({
   children,
@@ -29,7 +30,7 @@ export default async function AuthLayout({
         href={`/${safeLang}`}
         className="absolute left-4 top-4 z-20 inline-flex items-center gap-1.5 rounded-full bg-white/90 px-4 py-2 text-sm font-medium text-gray-800 shadow-sm backdrop-blur transition-colors hover:bg-white">
         <ArrowLeft className="h-4 w-4" />
-        Ana səhifə
+        {t(safeLang, 'nav.home')}
       </Link>
 
       <div className="relative z-10 flex items-center justify-center min-h-screen">

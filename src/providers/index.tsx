@@ -7,13 +7,16 @@ import { AuthProvider } from '@/context/AuthContext';
 import { useEffect, useState } from 'react';
 import { ValidLanguage } from '../../middleware';
 import apiClient from '@/api';
+import type { Dictionary } from '@/lib/i18n/types';
 
 type ProvidersProps = {
   children: React.ReactNode;
   lang: ValidLanguage;
+  /** Active language's UI strings, resolved on the server in `[lang]/layout`. */
+  dictionary: Dictionary;
 };
 
-export function Providers({ children, lang }: ProvidersProps) {
+export function Providers({ children, lang, dictionary }: ProvidersProps) {
   useEffect(() => {
     apiClient.setLang(lang);
   }, [lang]);
@@ -36,7 +39,7 @@ export function Providers({ children, lang }: ProvidersProps) {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <TranslateProvider lang={lang}>
+      <TranslateProvider lang={lang} dictionary={dictionary}>
         <AuthProvider>
           {children}
         </AuthProvider>

@@ -25,7 +25,7 @@ const BANNER: Record<string, { welcome: string; tagline: string }> = {
 
 export default function LoginPageClient() {
   const { lang } = useParams<{ lang: string }>();
-  const b = BANNER[lang] ?? BANNER.az;
+  const b = BANNER[lang] ?? BANNER.en;
 
   return (
     <div className="min-h-screen w-full flex items-center justify-center p-4 bg-gradient-to-br from-[#013a30] via-[#006653] to-[#0a7d54]">

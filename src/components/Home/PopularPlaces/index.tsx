@@ -6,15 +6,20 @@ import Link from 'next/link';
 import PlacesCategories from './PlacesCategories';
 import { usePopularPlaces } from '@/hooks/usePopularPlaces';
 import RestaurantCard from '@/components/shared/RestaurantCard';
+import { useT } from '@/context/TranlateContext';
+import type { PopularPlacesResponse } from '@/types/place';
 
 interface PopularPlacesProps {
   lang: string;
+  /** Serverdə çəkilmiş ilkin siyahı — HTML-də restoran linkləri olsun deyə. */
+  initialData?: PopularPlacesResponse;
 }
 
-const PopularPlaces = ({ lang }: PopularPlacesProps) => {
+const PopularPlaces = ({ lang, initialData }: PopularPlacesProps) => {
   const [activeCategoryId, setActiveCategoryId] = useState<number | null>(null);
+  const t = useT();
 
-  const { data, isLoading } = usePopularPlaces();
+  const { data, isLoading } = usePopularPlaces(initialData);
   const categories = data?.data ?? [];
 
   useEffect(() => {
@@ -38,15 +43,15 @@ const PopularPlaces = ({ lang }: PopularPlacesProps) => {
       <div className="wrapper">
         <div className="mb-7 flex items-end justify-between">
           <div>
-            <h2 className="section-title">Populyar restoranlar</h2>
+            <h2 className="section-title">{t('home.popular.title')}</h2>
             <p className="mt-1.5 text-sm md:text-base text-muted-foreground">
-              Bakıda insanların rezerv etməyi sevdiyi məkanlar
+              {t('home.popular.subtitle')}
             </p>
           </div>
           <Link
             href={`/${lang}/places`}
             className="hidden md:inline-flex items-center font-medium text-brand-ink hover:text-brand-ink/80 transition-colors">
-            Hamısına bax <ChevronRight className="h-4 w-4 ml-1" />
+            {t('common.seeAll')} <ChevronRight className="h-4 w-4 ml-1" />
           </Link>
         </div>
 
@@ -79,7 +84,7 @@ const PopularPlaces = ({ lang }: PopularPlacesProps) => {
               <Link
                 href={`/${lang}/places`}
                 className="inline-flex items-center font-medium text-brand-ink hover:text-brand-ink/80 transition-colors">
-                Hamısına bax <ChevronRight className="h-4 w-4 ml-1" />
+                {t('common.seeAll')} <ChevronRight className="h-4 w-4 ml-1" />
               </Link>
             </div>
           </>

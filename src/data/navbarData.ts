@@ -1,26 +1,27 @@
 export type NavLinkType = {
   link: string;
-  text: string;
+  /** Dictionary key — resolved per language at render time (see src/lib/i18n). */
+  key: string;
 };
 export const navbarData: NavLinkType[] = [
   {
     link: '/',
-    text: 'Ana səhifə',
+    key: 'nav.home',
   },
   {
     link: '/about',
-    text: 'Haqqımızda',
+    key: 'nav.about',
   },
   {
     link: '/places',
-    text: 'Məkanlar',
+    key: 'nav.places',
   },
   {
     link: '/blog',
-    text: 'Bloq',
+    key: 'nav.blog',
   },
   {
     link: '/contact',
-    text: 'Əlaqə',
+    key: 'nav.contact',
   },
 ];

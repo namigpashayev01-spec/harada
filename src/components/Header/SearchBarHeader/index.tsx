@@ -1,21 +1,23 @@
 'use client';
 import { useState, useEffect, useRef } from 'react';
-import Image from 'next/image';
-import { Search, MapPin, Utensils, Loader2 } from 'lucide-react';
+import {
+  Search,
+  MapPin,
+  Utensils,
+  Loader2,
+  LocateFixed,
+  ChefHat,
+  Soup,
+} from 'lucide-react';
 import { useRouter, usePathname } from 'next/navigation';
 import { Input } from '@/components/ui/input';
 import HeroFilter, { FilterSelection } from './HeroFilter';
-import placeService from '@/services/place.service';
-import { NearbyRestaurant } from '@/types/restaurant';
-
-// Wide bounding box covering all of Azerbaijan, so name suggestions are
-// not limited to a small radius while the user is still typing.
-const AZ_BBOX = {
-  ne_lat: 41.95,
-  ne_lng: 50.7,
-  sw_lat: 38.3,
-  sw_lng: 44.7,
-};
+import placeService, {
+  type SuggestCuisine,
+  type SuggestDish,
+  type SuggestRestaurant,
+} from '@/services/place.service';
+import { useT } from '@/context/TranlateContext';
 
 declare global {
   interface Window {
@@ -60,6 +62,7 @@ function expandBboxIfTooSmall(b: AreaBounds): AreaBounds {
 }
 
 const SearchBarHeader = ({ compact = false }: { compact?: boolean }) => {
+  const t = useT();
   const [search, setSearch] = useState('');
   const [locationText, setLocationText] = useState('');
   const [filters, setFilters] = useState<FilterSelection>({
@@ -76,19 +79,30 @@ const SearchBarHeader = ({ compact = false }: { compact?: boolean }) => {
   const lang = pathname.split('/')[1] || 'en';
   const langRef = useRef(lang);
 
+  // İstifadəçinin öz koordinatı — seçilibsə bbox əvəzinə bu göndərilir
+  // və nəticələr məsafəyə görə sıralanır.
+  const [myLocation, setMyLocation] = useState<{ lat: number; lng: number } | null>(null);
+  const [locating, setLocating] = useState(false);
+  const [geoError, setGeoError] = useState<string | null>(null);
+
   // Live name suggestions for the search input.
-  const [suggestions, setSuggestions] = useState<NearbyRestaurant[]>([]);
+  const [cuisineSuggestions, setCuisineSuggestions] = useState<SuggestCuisine[]>([]);
+  const [dishSuggestions, setDishSuggestions] = useState<SuggestDish[]>([]);
+  const [suggestions, setSuggestions] = useState<SuggestRestaurant[]>([]);
   const [showSuggest, setShowSuggest] = useState(false);
   const [loadingSuggest, setLoadingSuggest] = useState(false);
   const searchBoxRef = useRef<HTMLDivElement>(null);
 
-  const suggestionSlug = (r: NearbyRestaurant) =>
-    r.slug.az || r.slug.en || r.slug.ru || String(r.id);
-
-  const goToRestaurant = (r: NearbyRestaurant) => {
+  const goToRestaurant = (r: SuggestRestaurant) => {
     setShowSuggest(false);
     setSearch(r.title);
-    router.push(`/${lang}/places/${suggestionSlug(r)}`);
+    router.push(`/${lang}/places/${r.slug}`);
+  };
+
+  /** Mətbəx/yemək seçmək axtarışa getmir — mətni doldurur, qərar istifadəçinindir. */
+  const pickTerm = (term: string) => {
+    setShowSuggest(false);
+    setSearch(term);
   };
 
   useEffect(() => { searchRef.current = search; }, [search]);
@@ -102,6 +116,8 @@ const SearchBarHeader = ({ compact = false }: { compact?: boolean }) => {
     const term = search.trim();
     if (term.length < 2) {
       setSuggestions([]);
+      setCuisineSuggestions([]);
+      setDishSuggestions([]);
       setLoadingSuggest(false);
       return;
     }
@@ -109,18 +125,19 @@ const SearchBarHeader = ({ compact = false }: { compact?: boolean }) => {
     setLoadingSuggest(true);
     const t = setTimeout(async () => {
       try {
-        const res = await placeService.getNearbyRestaurants({
-          ...AZ_BBOX,
-          search: term,
-          page: 1,
-          per_page: 6,
-        });
+        const res = await placeService.searchSuggest(term);
         if (!cancelled) {
-          setSuggestions(res.data ?? []);
+          setCuisineSuggestions(res.cuisines ?? []);
+          setDishSuggestions(res.dishes ?? []);
+          setSuggestions(res.restaurants ?? []);
           setShowSuggest(true);
         }
       } catch {
-        if (!cancelled) setSuggestions([]);
+        if (!cancelled) {
+          setCuisineSuggestions([]);
+          setDishSuggestions([]);
+          setSuggestions([]);
+        }
       } finally {
         if (!cancelled) setLoadingSuggest(false);
       }
@@ -208,20 +225,11 @@ const SearchBarHeader = ({ compact = false }: { compact?: boolean }) => {
           const b = expandBboxIfTooSmall(rawBbox);
           boundsRef.current = b;
           const newLocationText = place.formatted_address || place.name || '';
-          console.log('[SearchArea] 📝 Setting location text to:', newLocationText);
           setLocationText(newLocationText);
-
-          const params = new URLSearchParams();
-          const s = searchRef.current.trim();
-          if (s) params.set('search', s);
-          params.set('ne_lat', String(b.ne_lat));
-          params.set('ne_lng', String(b.ne_lng));
-          params.set('sw_lat', String(b.sw_lat));
-          params.set('sw_lng', String(b.sw_lng));
-          appendFilters(params, filtersRef.current);
-          const url = `/${langRef.current}/places?${params.toString()}`;
-          console.log('[SearchArea] 🚀 Navigating to:', url);
-          router.push(url);
+          // Məkan seçmək axtarışı BAŞLATMIR — istifadəçi əvvəlcə mətbəx və ya
+          // restoran adını yazsın, sonra AXTAR düyməsinə toxunsun.
+          setMyLocation(null);
+          setGeoError(null);
         });
         return;
       }
@@ -245,20 +253,50 @@ const SearchBarHeader = ({ compact = false }: { compact?: boolean }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  /**
+   * Brauzerdən məkan icazəsi istəyir. İcazə bağlıdırsa istifadəçiyə nə
+   * edəcəyini deyirik — sadəcə "alınmadı" demək kifayət etmir.
+   */
+  const useMyLocation = () => {
+    setGeoError(null);
+
+    if (typeof navigator === 'undefined' || !navigator.geolocation) {
+      setGeoError(t('search.geoUnsupported'));
+      return;
+    }
+
+    setLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setMyLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+        boundsRef.current = null;
+        setLocationText(t('search.usingMyLocation'));
+        setLocating(false);
+      },
+      () => {
+        setLocating(false);
+        setMyLocation(null);
+        setGeoError(t('search.geoDenied'));
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 },
+    );
+  };
+
   const submit = () => {
     console.log('[SearchArea] 🔘 Submit button / Enter pressed');
     const params = new URLSearchParams();
     const s = search.trim();
     if (s) params.set('search', s);
     const b = boundsRef.current;
-    if (b) {
-      console.log('[SearchArea] 📤 Submitting WITH bbox:', b, '| search:', s || '(empty)');
+    if (myLocation) {
+      // Öz yeri seçilib — nəticələr məsafəyə görə sıralanır
+      params.set('lat', String(myLocation.lat));
+      params.set('lng', String(myLocation.lng));
+    } else if (b) {
       params.set('ne_lat', String(b.ne_lat));
       params.set('ne_lng', String(b.ne_lng));
       params.set('sw_lat', String(b.sw_lat));
       params.set('sw_lng', String(b.sw_lng));
-    } else {
-      console.log('[SearchArea] 📤 Submitting WITHOUT bbox (no area selected) | search:', s || '(empty)');
     }
     appendFilters(params, filtersRef.current);
     const url = `/${lang}/places?${params.toString()}`;
@@ -282,7 +320,7 @@ const SearchBarHeader = ({ compact = false }: { compact?: boolean }) => {
           <input
             ref={locationInputRef}
             type="text"
-            placeholder="Rayon / Metro"
+            placeholder={t('search.locationPlaceholder')}
             value={locationText}
             onChange={(e) => {
               console.log('[SearchArea] ⌨️ Location input changed:', e.target.value);
@@ -292,10 +330,24 @@ const SearchBarHeader = ({ compact = false }: { compact?: boolean }) => {
                 boundsRef.current = null;
               }
             }}
-            onFocus={() => console.log('[SearchArea] 🎯 Location input focused')}
             onKeyDown={(e) => { if (e.key === 'Enter') e.preventDefault(); }}
-            className={`pl-11 pr-3 placeholder:text-[#969696] outline-none ${fieldH} rounded-xl w-full text-black bg-gray-50 sm:bg-transparent focus:bg-gray-50 transition-colors`}
+            className={`pl-11 pr-11 placeholder:text-[#969696] outline-none ${fieldH} rounded-xl w-full text-black bg-gray-50 sm:bg-transparent focus:bg-gray-50 transition-colors`}
           />
+          <button
+            type="button"
+            onClick={useMyLocation}
+            disabled={locating}
+            title={t('search.myLocation')}
+            aria-label={t('search.myLocation')}
+            id="search-my-location"
+            data-gtm="search_my_location"
+            className="absolute right-2 top-1/2 z-10 -translate-y-1/2 rounded-lg p-2 text-gray-400 transition-colors hover:bg-gray-100 hover:text-[#006653] disabled:opacity-50">
+            {locating ? (
+              <Loader2 className="h-5 w-5 animate-spin" />
+            ) : (
+              <LocateFixed className={`h-5 w-5 ${myLocation ? 'text-[#006653]' : ''}`} />
+            )}
+          </button>
         </div>
 
         {/* Divider on desktop */}
@@ -306,7 +358,7 @@ const SearchBarHeader = ({ compact = false }: { compact?: boolean }) => {
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 z-10" />
           <Input
             type="text"
-            placeholder="Mətbəx, restoran adı..."
+            placeholder={t('search.queryPlaceholder')}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             onFocus={() => { if (suggestions.length) setShowSuggest(true); }}
@@ -320,48 +372,111 @@ const SearchBarHeader = ({ compact = false }: { compact?: boolean }) => {
               {loadingSuggest && suggestions.length === 0 ? (
                 <div className="flex items-center gap-2 px-4 py-3 text-sm text-gray-500">
                   <Loader2 className="h-4 w-4 animate-spin" />
-                  Axtarılır…
+                  {t('search.searching')}
                 </div>
-              ) : suggestions.length === 0 ? (
+              ) : suggestions.length === 0 &&
+                cuisineSuggestions.length === 0 &&
+                dishSuggestions.length === 0 ? (
                 <div className="px-4 py-3 text-sm text-gray-500">
-                  Nəticə tapılmadı
+                  {t('search.noResults')}
                 </div>
               ) : (
-                <ul className="max-h-80 overflow-y-auto py-1">
-                  {suggestions.map((r) => (
-                    <li key={r.id}>
-                      <button
-                        type="button"
-                        onMouseDown={(e) => e.preventDefault()}
-                        onClick={() => goToRestaurant(r)}
-                        className="flex w-full items-center gap-3 px-3 py-2.5 text-left transition-colors hover:bg-gray-50">
-                        {r.image ? (
-                          <Image
-                            src={r.image}
-                            alt={r.title}
-                            width={40}
-                            height={40}
-                            className="h-10 w-10 flex-shrink-0 rounded-lg object-cover"
-                          />
-                        ) : (
-                          <span className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-gray-100 text-gray-400">
-                            <Utensils className="h-5 w-5" />
-                          </span>
-                        )}
-                        <span className="min-w-0">
-                          <span className="block truncate text-sm font-medium text-gray-900">
-                            {r.title}
-                          </span>
-                          {r.address && (
-                            <span className="block truncate text-xs text-gray-500">
-                              {r.address}
-                            </span>
-                          )}
-                        </span>
-                      </button>
-                    </li>
-                  ))}
-                </ul>
+                <div className="max-h-80 overflow-y-auto py-1">
+                  {cuisineSuggestions.length > 0 && (
+                    <>
+                      <p className="px-3 pb-1 pt-2 text-[11px] font-semibold uppercase tracking-widest text-gray-400">
+                        {t('search.cuisines')}
+                      </p>
+                      <ul>
+                        {cuisineSuggestions.map((c) => (
+                          <li key={`c-${c.id}`}>
+                            <button
+                              type="button"
+                              onMouseDown={(e) => e.preventDefault()}
+                              onClick={() => pickTerm(c.title)}
+                              className="flex w-full items-center gap-3 px-3 py-2.5 text-left transition-colors hover:bg-gray-50">
+                              <span className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-[#eefae1] text-[#006653]">
+                                <ChefHat className="h-5 w-5" />
+                              </span>
+                              <span className="min-w-0 flex-1">
+                                <span className="block truncate text-sm font-medium text-gray-900">
+                                  {c.title}
+                                </span>
+                                <span className="block text-xs text-gray-500">
+                                  {c.count} {t('search.cuisineCount')}
+                                </span>
+                              </span>
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
+                    </>
+                  )}
+
+                  {dishSuggestions.length > 0 && (
+                    <>
+                      <p className="px-3 pb-1 pt-2 text-[11px] font-semibold uppercase tracking-widest text-gray-400">
+                        {t('search.dishes')}
+                      </p>
+                      <ul>
+                        {dishSuggestions.map((d) => (
+                          <li key={`d-${d.name}`}>
+                            <button
+                              type="button"
+                              onMouseDown={(e) => e.preventDefault()}
+                              onClick={() => pickTerm(d.name)}
+                              className="flex w-full items-center gap-3 px-3 py-2.5 text-left transition-colors hover:bg-gray-50">
+                              <span className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-amber-50 text-amber-600">
+                                <Soup className="h-5 w-5" />
+                              </span>
+                              <span className="min-w-0 flex-1">
+                                <span className="block truncate text-sm font-medium text-gray-900">
+                                  {d.name}
+                                </span>
+                                <span className="block text-xs text-gray-500">
+                                  {d.count} {t('search.dishCount')}
+                                </span>
+                              </span>
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
+                    </>
+                  )}
+
+                  {suggestions.length > 0 && (
+                    <>
+                      <p className="px-3 pb-1 pt-2 text-[11px] font-semibold uppercase tracking-widest text-gray-400">
+                        {t('search.restaurants')}
+                      </p>
+                      <ul>
+                        {suggestions.map((r) => (
+                          <li key={`r-${r.id}`}>
+                            <button
+                              type="button"
+                              onMouseDown={(e) => e.preventDefault()}
+                              onClick={() => goToRestaurant(r)}
+                              className="flex w-full items-center gap-3 px-3 py-2.5 text-left transition-colors hover:bg-gray-50">
+                              <span className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-gray-100 text-gray-400">
+                                <Utensils className="h-5 w-5" />
+                              </span>
+                              <span className="min-w-0">
+                                <span className="block truncate text-sm font-medium text-gray-900">
+                                  {r.title}
+                                </span>
+                                {r.address && (
+                                  <span className="block truncate text-xs text-gray-500">
+                                    {r.address}
+                                  </span>
+                                )}
+                              </span>
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
+                    </>
+                  )}
+                </div>
               )}
             </div>
           )}
@@ -372,7 +487,6 @@ const SearchBarHeader = ({ compact = false }: { compact?: boolean }) => {
           value={filters}
           onChange={setFilters}
           onApply={submit}
-          lang={lang}
           compact={compact}
         />
 
@@ -382,9 +496,15 @@ const SearchBarHeader = ({ compact = false }: { compact?: boolean }) => {
           onClick={() => submit()}
           className={`flex-shrink-0 cursor-pointer inline-flex items-center justify-center gap-2 ${fieldH} px-6 rounded-xl bg-brand hover:bg-brand-hover text-brand-ink font-semibold transition-colors`}>
           <Search className="h-5 w-5" />
-          AXTAR
+          {t('search.submit')}
         </button>
       </div>
+
+      {geoError && (
+        <p className="mt-2 rounded-lg bg-amber-50 px-3 py-2 text-xs leading-relaxed text-amber-800">
+          {geoError}
+        </p>
+      )}
     </div>
   );
 };

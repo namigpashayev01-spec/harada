@@ -3,6 +3,8 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
+  Store,
+  ClipboardList,
   Settings,
   Calendar,
   Heart,
@@ -11,8 +13,10 @@ import {
   Loader2,
   X,
 } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/context/AuthContext';
+import ownerService from '@/services/owner.service';
 
 interface SidebarProps {
   lang?: string;
@@ -21,6 +25,8 @@ interface SidebarProps {
 }
 
 interface Dict {
+  restaurant: string;
+  ownerReservations: string;
   settings: string;
   reservations: string;
   favorites: string;
@@ -31,6 +37,8 @@ interface Dict {
 
 const DICT: Record<string, Dict> = {
   az: {
+    restaurant: 'Restoranım',
+    ownerReservations: 'Restoran rezervasiyaları',
     settings: 'Profil tənzimləmələri',
     reservations: 'Rezervasiyalar',
     favorites: 'Sevimlilər',
@@ -39,6 +47,8 @@ const DICT: Record<string, Dict> = {
     loggingOut: 'Çıxılır…',
   },
   en: {
+    restaurant: 'My restaurant',
+    ownerReservations: 'Restaurant bookings',
     settings: 'Profile settings',
     reservations: 'Reservations',
     favorites: 'Favorites',
@@ -47,6 +57,8 @@ const DICT: Record<string, Dict> = {
     loggingOut: 'Logging out…',
   },
   ru: {
+    restaurant: 'Мой ресторан',
+    ownerReservations: 'Брони ресторана',
     settings: 'Настройки профиля',
     reservations: 'Бронирования',
     favorites: 'Избранное',
@@ -57,6 +69,7 @@ const DICT: Record<string, Dict> = {
 };
 
 const menuItems = [
+  { id: 'restaurant' as const, icon: Store, href: '/dashboard/restaurant' },
   { id: 'settings' as const, icon: Settings, href: '/dashboard/settings' },
   { id: 'reservations' as const, icon: Calendar, href: '/dashboard/reservations' },
   { id: 'favorites' as const, icon: Heart, href: '/dashboard/favorites' },
@@ -64,10 +77,31 @@ const menuItems = [
 ];
 
 export default function Sidebar({ lang = 'en', open = false, onClose }: SidebarProps) {
-  const t = DICT[lang] ?? DICT.az;
+  const t = DICT[lang] ?? DICT.en;
   const pathname = usePathname();
   const [loggingOut, setLoggingOut] = useState(false);
   const { logout } = useAuth();
+
+  // "Restoran rezervasiyaları" yalnız təsdiqlənmiş sahiblərə lazımdır —
+  // adi ziyarətçinin menyusunu doldurmasın.
+  const { data: owned } = useQuery({
+    queryKey: ['owner', 'restaurants'],
+    queryFn: () => ownerService.getRestaurants(),
+    staleTime: 5 * 60 * 1000,
+  });
+  const isOwner = (owned?.data?.length ?? 0) > 0;
+
+  const items = isOwner
+    ? [
+        menuItems[0],
+        {
+          id: 'ownerReservations' as const,
+          icon: ClipboardList,
+          href: '/dashboard/restaurant/reservations',
+        },
+        ...menuItems.slice(1),
+      ]
+    : menuItems;
 
   const isActive = (href: string) => pathname.includes(href);
 
@@ -117,7 +151,7 @@ export default function Sidebar({ lang = 'en', open = false, onClose }: SidebarP
         {/* Menu Items */}
         <nav className="flex-1 px-4 pb-4 space-y-2 lg:mt-[30px] overflow-y-auto">
           <div className="flex-1 space-y-2">
-            {menuItems.map((item) => {
+            {items.map((item) => {
               const Icon = item.icon;
               const active = isActive(item.href);
               return (

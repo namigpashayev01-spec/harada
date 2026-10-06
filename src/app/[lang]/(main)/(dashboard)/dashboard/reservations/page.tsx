@@ -54,6 +54,7 @@ const DICT: Record<string, Dict> = {
       CONFIRMED: "Təsdiqləndi",
       DECLINED_BY_USER: "Sizin tərəfdən ləğv edildi",
       DECLINED_BY_RESTORAN: "Restoran tərəfindən rədd edildi",
+      DECLINED_BY_RESTAURANT: "Restoran tərəfindən rədd edildi",
       CANCELLED: "Ləğv edildi",
       COMPLETED: "Tamamlandı",
     },
@@ -74,6 +75,7 @@ const DICT: Record<string, Dict> = {
       CONFIRMED: "Confirmed",
       DECLINED_BY_USER: "Cancelled by you",
       DECLINED_BY_RESTORAN: "Declined by restaurant",
+      DECLINED_BY_RESTAURANT: "Declined by restaurant",
       CANCELLED: "Cancelled",
       COMPLETED: "Completed",
     },
@@ -94,6 +96,7 @@ const DICT: Record<string, Dict> = {
       CONFIRMED: "Подтверждено",
       DECLINED_BY_USER: "Отменено вами",
       DECLINED_BY_RESTORAN: "Отклонено рестораном",
+      DECLINED_BY_RESTAURANT: "Отклонено рестораном",
       CANCELLED: "Отменено",
       COMPLETED: "Завершено",
     },
@@ -216,7 +219,7 @@ function ReservationRow({
 
 export default function ReservationsPage() {
   const { lang } = useParams<{ lang: string }>();
-  const t = DICT[lang] ?? DICT.az;
+  const t = DICT[lang] ?? DICT.en;
   const queryClient = useQueryClient();
   const [cancellingId, setCancellingId] = useState<number | null>(null);
   const [cancelError, setCancelError] = useState<string | null>(null);

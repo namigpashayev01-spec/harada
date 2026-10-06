@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import Image from 'next/image';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Category } from '@/types/category';
+import { useT } from '@/context/TranlateContext';
 
 interface CategoryScrollerProps {
   categories: Category[];
@@ -16,6 +17,7 @@ export default function CategoryScroller({
   activeCategoryId,
   onSelect,
 }: CategoryScrollerProps) {
+  const t = useT();
   const scrollRef = useRef<HTMLDivElement>(null);
   const [canLeft, setCanLeft] = useState(false);
   const [canRight, setCanRight] = useState(false);
@@ -59,7 +61,7 @@ export default function CategoryScroller({
       />
       <button
         type="button"
-        aria-label="Geri sürüşdür"
+        aria-label={t('common.scrollLeft')}
         onClick={() => scrollBy(-1)}
         className={`absolute left-1 top-1/2 z-20 -translate-y-1/2 flex h-8 w-8 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-700 shadow-md transition-all hover:bg-gray-50 ${
           canLeft ? 'opacity-100' : 'pointer-events-none opacity-0'
@@ -73,7 +75,7 @@ export default function CategoryScroller({
         onScroll={updateArrows}
         className="no-scrollbar flex items-center gap-2 overflow-x-auto scroll-smooth py-1">
         <button onClick={() => onSelect(null)} className={pill(activeCategoryId === null)}>
-          Hamısı
+          {t('common.all')}
         </button>
         {categories.map((cat) => (
           <button
@@ -83,7 +85,7 @@ export default function CategoryScroller({
             {cat.icon && (
               <Image
                 src={cat.icon}
-                alt={cat.title || 'Category'}
+                alt={cat.title || t('common.category')}
                 width={16}
                 height={16}
                 className="h-4 w-4 object-contain"
@@ -102,7 +104,7 @@ export default function CategoryScroller({
       />
       <button
         type="button"
-        aria-label="İrəli sürüşdür"
+        aria-label={t('common.scrollRight')}
         onClick={() => scrollBy(1)}
         className={`absolute right-1 top-1/2 z-20 -translate-y-1/2 flex h-8 w-8 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-700 shadow-md transition-all hover:bg-gray-50 ${
           canRight ? 'opacity-100' : 'pointer-events-none opacity-0'

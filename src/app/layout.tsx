@@ -4,9 +4,10 @@ import Script from 'next/script';
 import { headers } from 'next/headers';
 import './globals.css';
 import { VALID_LANGUAGES } from '../../middleware';
+import { HTML_LANG } from '@/lib/locales';
 import { Poppins, Raleway, Inter } from 'next/font/google';
 import settingService from '@/services/setting.service';
-import { SITE_URL } from '@/lib/seo';
+import { SITE_URL, buildSocial } from '@/lib/seo';
 
 const poppins = Poppins({
   subsets: ['latin'],
@@ -30,13 +31,20 @@ const inter = Inter({
 });
 
 export async function generateMetadata(): Promise<Metadata> {
+  // Same request-header fallback the layout uses, so the default social card
+  // gets the right locale (og:locale) for the visitor's language.
+  const headerLang = (await headers()).get('x-next-locale') ?? undefined;
+  const lang =
+    headerLang && VALID_LANGUAGES.includes(headerLang) ? headerLang : 'az';
+
   try {
     const res = await settingService.getSettings();
     const { seo_title, seo_description, favicon } = res.data;
+    const brand = seo_title || 'Harada Oturaq';
     return {
       title: {
-        default: seo_title || 'Diny',
-        template: `%s | ${seo_title || 'Diny'}`,
+        default: brand,
+        template: `%s | ${brand}`,
       },
       metadataBase: new URL(SITE_URL),
       description: seo_description || undefined,
@@ -48,15 +56,21 @@ export async function generateMetadata(): Promise<Metadata> {
       verification: {
         google: 'EllxZxZ68GlUGwLx8AKxr9p1yITlOnBZMBrXVRXNDCk',
       },
+      ...buildSocial({
+        lang,
+        title: brand,
+        description: seo_description || undefined,
+      }),
     };
   } catch {
     return {
       metadataBase: new URL(SITE_URL),
-      title: { default: 'Diny', template: '%s | Diny' },
+      title: { default: 'Harada Oturaq', template: '%s | Harada Oturaq' },
       robots: { index: true, follow: true },
       verification: {
         google: 'EllxZxZ68GlUGwLx8AKxr9p1yITlOnBZMBrXVRXNDCk',
       },
+      ...buildSocial({ lang, title: 'Harada Oturaq' }),
     };
   }
 }
@@ -78,8 +92,14 @@ export default async function RootLayout({
     candidate && VALID_LANGUAGES.includes(candidate) ? candidate : 'en';
 
   return (
-    <html lang={lang} suppressHydrationWarning>
+    <html lang={HTML_LANG[lang] ?? lang} suppressHydrationWarning>
       <body suppressHydrationWarning className={`${poppins.variable} ${raleway.variable} ${inter.variable}`}>
+        {/* Daxil olmuş istifadəçinin nömrəsini GTM yüklənməzdən ƏVVƏL dataLayer-ə
+            qoyur — belə olmasa ilk səhifə baxışı user_id-siz gedərdi. */}
+        <Script id="user-id-bootstrap" strategy="beforeInteractive">
+          {`(function(){try{var u=window.localStorage.getItem('diny_user_id');
+window.dataLayer=window.dataLayer||[];if(u){window.dataLayer.push({user_id:u});}}catch(e){}})();`}
+        </Script>
         {/* Google Tag Manager */}
         <Script id="gtm" strategy="afterInteractive">
           {`(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
@@ -99,18 +119,8 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
           />
         </noscript>
         {/* End Google Tag Manager (noscript) */}
-        {/* Google tag (gtag.js) — GA4 */}
-        <Script
-          src="https://www.googletagmanager.com/gtag/js?id=G-C8JSE9HW9K"
-          strategy="afterInteractive"
-        />
-        <Script id="gtag-init" strategy="afterInteractive">
-          {`window.dataLayer = window.dataLayer || [];
-function gtag(){dataLayer.push(arguments);}
-gtag('js', new Date());
-gtag('config', 'G-C8JSE9HW9K');`}
-        </Script>
-        {/* End Google tag (gtag.js) */}
+        {/* GA4 (G-C8JSE9HW9K) artıq GTM konteynerindən idarə olunur —
+            burada ayrıca gtag.js saxlamaq baxışları ikiqat sayardı. */}
         {children}
       </body>
     </html>

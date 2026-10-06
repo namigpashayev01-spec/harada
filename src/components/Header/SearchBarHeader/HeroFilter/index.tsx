@@ -6,6 +6,7 @@ import { SlidersHorizontal, Tag, Check, X } from 'lucide-react';
 import propertyService from '@/services/property.service';
 import { Property } from '@/types/restaurant';
 import { cn } from '@/lib/utils';
+import { useT } from '@/context/TranlateContext';
 
 export interface FilterSelection {
   properties: number[];
@@ -17,60 +18,13 @@ interface HeroFilterProps {
   value: FilterSelection;
   onChange: (v: FilterSelection) => void;
   onApply: () => void;
-  lang: string;
   compact?: boolean;
 }
-
-const LABELS: Record<
-  string,
-  {
-    filter: string;
-    title: string;
-    subtitle: string;
-    offers: string;
-    offer: string;
-    clear: string;
-    apply: string;
-    empty: string;
-  }
-> = {
-  az: {
-    filter: 'Filtr',
-    title: 'Filtrlər',
-    subtitle: 'Mətbəx, məkan tipi və təkliflər',
-    offers: 'Təkliflər',
-    offer: 'Endirimli',
-    clear: 'Təmizlə',
-    apply: 'Nəticələri göstər',
-    empty: 'Filtrlər yüklənir...',
-  },
-  en: {
-    filter: 'Filter',
-    title: 'Filters',
-    subtitle: 'Cuisine, venue type and offers',
-    offers: 'Offers',
-    offer: 'Special offer',
-    clear: 'Clear',
-    apply: 'Show results',
-    empty: 'Loading filters...',
-  },
-  ru: {
-    filter: 'Фильтр',
-    title: 'Фильтры',
-    subtitle: 'Кухня, тип заведения и предложения',
-    offers: 'Предложения',
-    offer: 'Со скидкой',
-    clear: 'Очистить',
-    apply: 'Показать',
-    empty: 'Загрузка фильтров...',
-  },
-};
 
 export default function HeroFilter({
   value,
   onChange,
   onApply,
-  lang,
   compact = false,
 }: HeroFilterProps) {
   const [open, setOpen] = useState(false);
@@ -80,7 +34,7 @@ export default function HeroFilter({
   const wrapRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const portalRef = useRef<HTMLDivElement>(null);
-  const t = LABELS[lang] ?? LABELS.az;
+  const t = useT();
 
   useEffect(() => setMounted(true), []);
 
@@ -193,11 +147,11 @@ export default function HeroFilter({
       {/* Special offer */}
       <div className="mb-5">
         <p className="mb-2.5 text-xs font-semibold uppercase tracking-wide text-gray-400">
-          {t.offers}
+          {t('filter.offers')}
         </p>
         <button onClick={toggleOffer} className={chip(value.is_special_offer)}>
           <Tag className="h-4 w-4" />
-          {t.offer}
+          {t('filter.offer')}
           {value.is_special_offer && <Check className="h-4 w-4" />}
         </button>
       </div>
@@ -236,7 +190,7 @@ export default function HeroFilter({
       ))}
 
       {properties.length === 0 && (
-        <p className="py-6 text-center text-sm text-gray-400">{t.empty}</p>
+        <p className="py-6 text-center text-sm text-gray-400">{t('filter.loading')}</p>
       )}
     </>
   );
@@ -244,8 +198,8 @@ export default function HeroFilter({
   const Header = (
     <div className="flex items-start justify-between gap-3 border-b border-gray-100 px-5 py-4">
       <div>
-        <h3 className="text-base font-bold text-gray-900">{t.title}</h3>
-        <p className="mt-0.5 text-xs text-gray-500">{t.subtitle}</p>
+        <h3 className="text-base font-bold text-gray-900">{t('filter.title')}</h3>
+        <p className="mt-0.5 text-xs text-gray-500">{t('filter.subtitle')}</p>
       </div>
       <div className="flex items-center gap-2">
         {count > 0 && (
@@ -255,7 +209,7 @@ export default function HeroFilter({
         )}
         <button
           onClick={() => setOpen(false)}
-          aria-label="Close"
+          aria-label={t('common.close')}
           className="rounded-full p-1.5 text-gray-500 hover:bg-gray-100">
           <X className="h-5 w-5" />
         </button>
@@ -270,12 +224,12 @@ export default function HeroFilter({
         disabled={count === 0}
         className="inline-flex items-center gap-1.5 rounded-lg px-3 py-2.5 text-sm font-semibold text-gray-600 transition-colors hover:bg-gray-100 disabled:opacity-40">
         <X className="h-4 w-4" />
-        {t.clear}
+        {t('filter.clear')}
       </button>
       <button
         onClick={apply}
         className="ml-auto rounded-xl bg-[#9fe870] px-6 py-2.5 text-sm font-bold text-[#14532d] transition-colors hover:bg-[#8fdc5c]">
-        {t.apply}
+        {t('filter.apply')}
         {count > 0 ? ` (${count})` : ''}
       </button>
     </div>
@@ -288,7 +242,7 @@ export default function HeroFilter({
         ref={triggerRef}
         type="button"
         onClick={() => setOpen((o) => !o)}
-        aria-label={t.filter}
+        aria-label={t('filter.trigger')}
         className={cn(
           'relative inline-flex items-center justify-center gap-2 rounded-xl border px-4 text-gray-700 transition-colors',
           fieldH,
@@ -297,7 +251,7 @@ export default function HeroFilter({
             : 'border-gray-200 bg-gray-50 hover:bg-gray-100 sm:bg-transparent',
         )}>
         <SlidersHorizontal className="h-5 w-5" />
-        <span className="font-medium sm:hidden">{t.filter}</span>
+        <span className="font-medium sm:hidden">{t('filter.trigger')}</span>
         {count > 0 && (
           <span className="absolute -right-1.5 -top-1.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-[#006653] px-1 text-[11px] font-bold text-white">
             {count}
@@ -332,7 +286,7 @@ export default function HeroFilter({
             <div
               role="dialog"
               aria-modal="true"
-              aria-label={t.title}
+              aria-label={t('filter.title')}
               className={cn(
                 'fixed inset-x-0 bottom-0 z-[71] flex max-h-[88vh] flex-col rounded-t-2xl bg-white shadow-2xl transition-transform duration-300 ease-out sm:hidden',
                 open ? 'translate-y-0' : 'translate-y-full',

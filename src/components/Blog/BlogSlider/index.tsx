@@ -10,10 +10,12 @@ import {
   ChevronRight,
 } from 'lucide-react';
 import { ISlug } from '@/types';
-import { getStaticBlogs } from '@/data/staticBlogs';
+import { BlogItem } from '@/types/blog';
 
 interface BlogSliderProps {
   lang: string;
+  /** Fetched on the server by the blog page so the hero is in the initial HTML. */
+  blogs: BlogItem[];
 }
 
 const stripHtml = (html: string) => html.replace(/<[^>]*>/g, '');
@@ -28,12 +30,12 @@ const LABELS: Record<string, { latest: string; readMore: string; tag: string }> 
     ru: { latest: 'Последние блоги', readMore: 'Читать далее', tag: 'Избранное' },
   };
 
-const BlogSlider = ({ lang }: BlogSliderProps) => {
+const BlogSlider = ({ lang, blogs }: BlogSliderProps) => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
-  const t = LABELS[lang] ?? LABELS.az;
+  const t = LABELS[lang] ?? LABELS.en;
 
-  const slides = useMemo(() => getStaticBlogs(lang).slice(0, 4), [lang]);
+  const slides = useMemo(() => blogs.slice(0, 4), [blogs]);
   const current = slides[currentSlide] ?? slides[0];
 
   const goTo = (i: number) =>
@@ -49,15 +51,8 @@ const BlogSlider = ({ lang }: BlogSliderProps) => {
     return () => clearInterval(timer);
   }, [nextSlide, isPaused, slides.length]);
 
-  if (!current) {
-    return (
-      <section className="pt-6">
-        <div className="wrapper">
-          <div className="h-[440px] md:h-[520px] rounded-[24px] bg-gray-100 animate-pulse" />
-        </div>
-      </section>
-    );
-  }
+  // Nothing published yet — hide the hero instead of showing a skeleton forever.
+  if (!current) return null;
 
   const href = `/${lang}/blog/${getSlug(current.slug, lang)}`;
 

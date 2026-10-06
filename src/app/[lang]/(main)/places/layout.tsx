@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import React from 'react';
 import { pageAlternates } from '@/lib/seo';
+import { t } from '@/lib/i18n';
 
 export async function generateMetadata({
   params,
@@ -9,9 +10,8 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { lang } = await params;
   return {
-    title: { absolute: 'Restoranlar — Yaxınlıqda yemək yeri | Harada Oturaq' },
-    description:
-      'Xəritədə yaxınlığındakı restoranları tap; mətbəx, qiymət və xüsusiyyətlərə görə filtrlə, ən uyğun yeməyi seç.',
+    title: { absolute: t(lang, 'seo.places.title') },
+    description: t(lang, 'seo.places.description'),
     alternates: pageAlternates(lang, '/places'),
   };
 }

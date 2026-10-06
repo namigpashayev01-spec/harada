@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { Check, Phone, Mail } from 'lucide-react';
 import RegisterHeader from '@/components/RestaurantRegister/RegisterHeader';
-import RestaurantRegisterForm from '@/components/RestaurantRegister/RestaurantRegisterForm';
+import RegisterPaths from '@/components/RestaurantRegister/RegisterPaths';
 import {
   getRestaurantRegisterDict,
   SUPPORT_PHONE,
@@ -9,6 +9,7 @@ import {
 } from '@/components/RestaurantRegister/translations';
 import settingService from '@/services/setting.service';
 import { pageAlternates } from '@/lib/seo';
+import { t } from '@/lib/i18n';
 
 interface PageProps {
   params: Promise<{ lang: string }>;
@@ -17,9 +18,8 @@ interface PageProps {
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { lang } = await params;
   return {
-    title: { absolute: 'Restoranını qeydiyyatdan keçir | Harada Oturaq' },
-    description:
-      'Restoranını Harada Oturaq platformasına əlavə et, yeni müştərilərə çat və onlayn rezervasiya qəbul etməyə başla.',
+    title: { absolute: t(lang, 'seo.restaurantRegister.title') },
+    description: t(lang, 'seo.restaurantRegister.description'),
     alternates: pageAlternates(lang, '/restaurant-register'),
   };
 }
@@ -94,7 +94,7 @@ export default async function RestaurantRegisterPage({ params }: PageProps) {
 
           {/* Form */}
           <div>
-            <RestaurantRegisterForm t={t} />
+            <RegisterPaths t={t} lang={lang} />
           </div>
         </div>
       </div>

@@ -12,6 +12,7 @@ import LogoImg from '@/assets/images/logo.png';
 import LanguageSwitcher from './LanguageSwitcher';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
+import { useT } from '@/context/TranlateContext';
 
 interface NavbarProps {
   logo?: string;
@@ -29,6 +30,7 @@ export default function Navbar({ logo }: NavbarProps) {
     ? pathname.split('/')[1]
     : 'en';
   const { user, isAuthenticated, isInitializing, logout } = useAuth();
+  const t = useT();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -82,7 +84,7 @@ export default function Navbar({ logo }: NavbarProps) {
               )}>
               {navbarData.map((item) => (
                 <NavLink key={item.link} href={item.link}>
-                  {item.text}
+                  {t(item.key)}
                 </NavLink>
               ))}
             </nav>
@@ -110,7 +112,7 @@ export default function Navbar({ logo }: NavbarProps) {
                   <Link
                     href={`/${urlLang}/dashboard/favorites`}
                     className="hidden md:flex text-red-500 hover:text-red-600 transition-colors"
-                    aria-label="Sevimlilər">
+                    aria-label={t('nav.favorites')}>
                     <Heart size={24} />
                   </Link>
                   <div className="relative">
@@ -130,7 +132,7 @@ export default function Navbar({ logo }: NavbarProps) {
                         </div>
                       )}
                       <span className="text-sm font-medium max-w-[140px] truncate">
-                        {user?.name ?? 'Hesab'}
+                        {user?.name ?? t('nav.account')}
                       </span>
                     </button>
                     {menuOpen && (
@@ -138,22 +140,22 @@ export default function Navbar({ logo }: NavbarProps) {
                         <Link
                           href={`/${urlLang}/dashboard/settings`}
                           className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
-                          Profil ayarları
+                          {t('nav.profileSettings')}
                         </Link>
                         <Link
                           href={`/${urlLang}/dashboard/reservations`}
                           className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
-                          Rezervlər
+                          {t('nav.reservations')}
                         </Link>
                         <Link
                           href={`/${urlLang}/dashboard/favorites`}
                           className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
-                          Sevimlilər
+                          {t('nav.favorites')}
                         </Link>
                         <Link
                           href={`/${urlLang}/dashboard/reviews`}
                           className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
-                          Rəylər
+                          {t('nav.reviews')}
                         </Link>
                         <div className="my-1 border-t border-gray-100" />
                         <button
@@ -163,7 +165,7 @@ export default function Navbar({ logo }: NavbarProps) {
                           }}
                           className="w-full text-left flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50">
                           <LogOut size={16} />
-                          Çıxış
+                          {t('nav.logout')}
                         </button>
                       </div>
                     )}
@@ -174,12 +176,12 @@ export default function Navbar({ logo }: NavbarProps) {
                   <Link
                     href={`/${urlLang}/register`}
                     className="hidden md:block text-gray-700 hover:text-gray-900 xl:text-base text-[14px] font-medium">
-                    Qeydiyyat
+                    {t('nav.register')}
                   </Link>
                   <Link
                     href={`/${urlLang}/login`}
                     className="hidden md:flex bg-[#006653] xl:text-base text-[14px] items-center justify-center text-white px-6 py-2 rounded-md font-medium hover:bg-opacity-90 transition-colors">
-                    Daxil ol
+                    {t('nav.login')}
                   </Link>
                 </>
               ))}

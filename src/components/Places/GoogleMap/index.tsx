@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { useT } from '@/context/TranlateContext';
 
 declare global {
   interface Window {
@@ -40,6 +41,7 @@ export default function GoogleMap({
   preview = false,
   externalLink,
 }: GoogleMapProps) {
+  const t = useT();
   const mapContainerRef = useRef<HTMLDivElement>(null);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const mapRef = useRef<any>(null);
@@ -248,7 +250,7 @@ export default function GoogleMap({
           href={externalLink}
           target="_blank"
           rel="noopener noreferrer"
-          aria-label="Google Maps-də aç"
+          aria-label={t('map.openInGoogleMaps')}
           className="absolute inset-0 z-[5] cursor-pointer"
         />
       )}

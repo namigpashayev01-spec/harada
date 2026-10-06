@@ -8,22 +8,31 @@ import { useParams } from 'next/navigation';
 import 'swiper/css';
 import 'swiper/css/pagination';
 import BlogCard from '@/components/shared/BlogCard';
-import { getStaticBlogs } from '@/data/staticBlogs';
+import { BlogItem } from '@/types/blog';
+import { useT } from '@/context/TranlateContext';
 
-const BlogList = () => {
+interface BlogListProps {
+  /** Fetched on the server by the home page. */
+  blogs: BlogItem[];
+}
+
+const BlogList = ({ blogs }: BlogListProps) => {
   const swiperRef = useRef<SwiperType | null>(null);
   const params = useParams();
   const lang = (params?.lang as string) || 'az';
+  const t = useT();
 
-  const blogData = getStaticBlogs(lang).slice(0, 6);
+  const blogData = blogs.slice(0, 6);
+
+  if (blogData.length === 0) return null;
 
   return (
     <section className="section">
       <div className="wrapper">
         <div className="flex flex-col gap-1.5">
-          <h2 className="section-title">Bloqumuzdan</h2>
+          <h2 className="section-title">{t('home.blog.title')}</h2>
           <p className="text-sm md:text-base text-muted-foreground">
-            Süfrədən məsləhətlər, bələdçilər və hekayələr
+            {t('home.blog.subtitle')}
           </p>
         </div>
         <div className="relative pt-7">

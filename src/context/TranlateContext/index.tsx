@@ -2,15 +2,17 @@
 
 import type React from 'react';
 
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
-
-type Translations = Record<string, string>;
+import { interpolate } from '@/lib/i18n/types';
+import type { Dictionary, TranslateVars } from '@/lib/i18n/types';
 
 type LanguageContextType = {
-  translations: Translations;
+  translations: Dictionary;
   lang: string;
   changeLang: (newLang: string) => void;
+  /** Kept for backwards compatibility — dictionaries are local now, so nothing
+   *  is ever loading. Consumers that branched on it stay correct. */
   isLoading: boolean;
 };
 
@@ -18,96 +20,96 @@ const LanguageContext = createContext<LanguageContextType | undefined>(
   undefined
 );
 
+/**
+ * Holds the active language's UI strings for client components.
+ *
+ * The dictionary is handed down from the `[lang]` server layout rather than
+ * fetched: it is present on the very first (server) render, so crawlers and
+ * users both see real text instead of raw keys, and only one language's strings
+ * are shipped to the browser.
+ *
+ * (This used to fetch `evakuasiya.166tech.az/api/translates` — a different
+ * project's tow-truck dictionary that had none of this site's keys.)
+ */
 export function TranslateProvider({
   children,
   lang,
+  dictionary,
 }: {
   children: React.ReactNode;
   lang: string;
+  dictionary: Dictionary;
 }) {
-  const [translations, setTranslations] = useState<Translations>({});
-  const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
   const pathname = usePathname();
 
-  const changeLang = (newLang: string) => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('NEXT_LOCALE', newLang);
-    }
-
-    const currentPath = pathname || '/';
-    const segments = currentPath.split('/');
-    segments[1] = newLang;
-    router.push(segments.join('/'));
-  };
-
-  useEffect(() => {
-    const fetchTranslations = async () => {
-      setIsLoading(true);
-      try {
-        const response = await fetch(
-          'https://evakuasiya.166tech.az/api/translates',
-          {
-            headers: {
-              'Accept-Language': lang,
-            },
-          }
-        );
-
-        if (!response.ok) {
-          throw new Error('Failed to fetch translations');
-        }
-
-        const data = await response.json();
-
-        setTranslations(data);
-      } catch (error) {
-        console.error('Error fetching translations:', error);
-        setTranslations({});
-      } finally {
-        setIsLoading(false);
+  const changeLang = useCallback(
+    (newLang: string) => {
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('NEXT_LOCALE', newLang);
+        // The middleware reads the language from this cookie when a visitor
+        // lands on a path without a language prefix.
+        document.cookie = `NEXT_LOCALE=${newLang};path=/;max-age=31536000;samesite=lax`;
       }
-    };
 
-    fetchTranslations();
-  }, [lang]);
+      const currentPath = pathname || '/';
+      const segments = currentPath.split('/');
+      segments[1] = newLang;
+      router.push(segments.join('/'));
+    },
+    [pathname, router]
+  );
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
       localStorage.setItem('NEXT_LOCALE', lang);
+      document.cookie = `NEXT_LOCALE=${lang};path=/;max-age=31536000;samesite=lax`;
     }
   }, [lang]);
 
+  const value = useMemo(
+    () => ({ translations: dictionary, lang, changeLang, isLoading: false }),
+    [dictionary, lang, changeLang]
+  );
+
   return (
-    <LanguageContext.Provider
-      value={{ translations, lang, changeLang, isLoading }}>
-      {isLoading ? (
-        <div className="flex justify-center items-center h-screen">
-          <div className="animate-spin h-8 w-8 border-4 border-blue-500 rounded-full border-t-transparent"></div>
-        </div>
-      ) : (
-        children
-      )}
+    <LanguageContext.Provider value={value}>
+      {children}
     </LanguageContext.Provider>
   );
 }
 
-export function useTranslate(key: string): string {
+function useLanguageContext(hook: string) {
   const context = useContext(LanguageContext);
 
   if (!context) {
-    throw new Error('useTranslate must be used within a TranslateProvider');
-  }
-
-  return context.translations[key] || key;
-}
-
-export function useLanguage() {
-  const context = useContext(LanguageContext);
-
-  if (!context) {
-    throw new Error('useLanguage must be used within a TranslateProvider');
+    throw new Error(`${hook} must be used within a TranslateProvider`);
   }
 
   return context;
+}
+
+/** Translate one key: `useTranslate('nav.home')`. */
+export function useTranslate(key: string, vars?: TranslateVars): string {
+  const { translations } = useLanguageContext('useTranslate');
+
+  return interpolate(translations[key] ?? key, vars);
+}
+
+/**
+ * Translate many keys from one component:
+ * `const t = useT(); t('nav.home')`
+ */
+export function useT() {
+  const { translations } = useLanguageContext('useT');
+
+  return useCallback(
+    (key: string, vars?: TranslateVars): string =>
+      interpolate(translations[key] ?? key, vars),
+    [translations]
+  );
+}
+
+export function useLanguage() {
+  return useLanguageContext('useLanguage');
 }

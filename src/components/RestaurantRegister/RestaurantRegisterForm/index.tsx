@@ -22,6 +22,9 @@ import {
   BAKU_DISTRICTS,
   type RestaurantRegisterDict,
 } from '@/components/RestaurantRegister/translations';
+import ownerService from '@/services/owner.service';
+import { useAuth } from '@/context/AuthContext';
+import Link from 'next/link';
 
 interface FormData {
   name: string;
@@ -68,10 +71,13 @@ export default function RestaurantRegisterForm({
 }: {
   t: RestaurantRegisterDict;
 }) {
+  const { isAuthenticated } = useAuth();
   const [step, setStep] = useState(0);
   const [data, setData] = useState<FormData>(EMPTY);
-  const [restaurantPhotos, setRestaurantPhotos] = useState<string[]>([]);
-  const [menuPhotos, setMenuPhotos] = useState<string[]>([]);
+  // Fayl adları deyil, faylların ÖZÜ saxlanılır — əks halda serverə
+  // göndəriləcək bir şey qalmır.
+  const [restaurantPhotos, setRestaurantPhotos] = useState<File[]>([]);
+  const [menuPhotos, setMenuPhotos] = useState<File[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
@@ -101,16 +107,15 @@ export default function RestaurantRegisterForm({
     }));
 
   const addPhotos = (
-    setter: React.Dispatch<React.SetStateAction<string[]>>,
+    setter: React.Dispatch<React.SetStateAction<File[]>>,
     files: FileList | null,
   ) => {
     if (!files) return;
-    const next = Array.from(files).map((f) => f.name);
-    setter((prev) => [...prev, ...next].slice(0, 8));
+    setter((prev) => [...prev, ...Array.from(files)].slice(0, 8));
   };
 
   const removePhoto = (
-    setter: React.Dispatch<React.SetStateAction<string[]>>,
+    setter: React.Dispatch<React.SetStateAction<File[]>>,
     i: number,
   ) => setter((prev) => prev.filter((_, idx) => idx !== i));
 
@@ -164,7 +169,7 @@ export default function RestaurantRegisterForm({
     }
   };
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     // Bütün addımları yoxla
@@ -176,14 +181,55 @@ export default function RestaurantRegisterForm({
       }
     }
 
+    if (!isAuthenticated) {
+      setError(t.loginRequired);
+      return;
+    }
+
     setError(null);
     setIsSubmitting(true);
-    // NOTE: Admin tərəfi hələ qurulmayıb. Backend hazır olanda müraciət
-    // burada API-yə göndəriləcək. Hələlik uğurlu vəziyyət göstərilir.
-    setTimeout(() => {
-      setIsSubmitting(false);
+    try {
+      // Şəkillər əvvəlcə yüklənir — müraciətdə yalnız yolları saxlanılır.
+      // Yükləmə alınmasa müraciət yenə də göndərilir, şəkilsiz.
+      const files = [...restaurantPhotos, ...menuPhotos].slice(0, 10);
+      let photoPaths: string[] = [];
+      if (files.length > 0) {
+        try {
+          const res = await ownerService.uploadRegistrationPhotos(files);
+          photoPaths = res.data?.paths ?? [];
+        } catch {
+          photoPaths = [];
+        }
+      }
+
+      await ownerService.registerRestaurant({
+        name: data.name,
+        contact_name: data.ownerName,
+        contact_phone: data.phone,
+        message: data.description,
+        proposed: {
+          cuisine: data.cuisine,
+          avg_price: data.avgPrice,
+          address: data.address,
+          district: data.district,
+          open_from: data.openFrom,
+          open_to: data.openTo,
+          map_link: data.mapLink,
+          email: data.email,
+          website: data.website,
+          photos: photoPaths,
+          photo_count: String(photoPaths.length),
+        },
+      });
       setSuccess(true);
-    }, 600);
+    } catch (err: unknown) {
+      const serverMessage = (
+        err as { response?: { data?: { message?: string } } }
+      )?.response?.data?.message;
+      setError(serverMessage || t.submitError);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const resetForm = () => {
@@ -388,7 +434,7 @@ export default function RestaurantRegisterForm({
                   required
                   hint={t.photosHint}
                   button={t.photosButton}
-                  items={restaurantPhotos}
+                  items={restaurantPhotos.map((f) => f.name)}
                   onAdd={(files) => addPhotos(setRestaurantPhotos, files)}
                   onRemove={(i) => removePhoto(setRestaurantPhotos, i)}
                 />
@@ -397,7 +443,7 @@ export default function RestaurantRegisterForm({
                   required
                   hint={t.photosHint}
                   button={t.photosButton}
-                  items={menuPhotos}
+                  items={menuPhotos.map((f) => f.name)}
                   onAdd={(files) => addPhotos(setMenuPhotos, files)}
                   onRemove={(i) => removePhoto(setMenuPhotos, i)}
                 />

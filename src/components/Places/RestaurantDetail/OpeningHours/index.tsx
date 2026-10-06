@@ -128,6 +128,68 @@ const DICT: Record<string, Dict> = {
   },
 };
 
+// Foreign-section languages (src/lib/locales.ts).
+DICT.sr = {
+  title: 'Radno vreme',
+  openNow: 'Sada otvoreno',
+  closedNow: 'Sada zatvoreno',
+  opensAt: (v) => `Otvara se u ${v}`,
+  closedAllDay: 'Zatvoreno',
+  fallbackOpenFrom: (v) => `Otvoreno od ${v}`,
+  days: {
+    monday: 'Ponedeljak', tuesday: 'Utorak', wednesday: 'Sreda', thursday: 'Četvrtak',
+    friday: 'Petak', saturday: 'Subota', sunday: 'Nedelja',
+  },
+};
+DICT.nl = {
+  title: 'Openingstijden',
+  openNow: 'Nu geopend',
+  closedNow: 'Nu gesloten',
+  opensAt: (v) => `Opent om ${v}`,
+  closedAllDay: 'Gesloten',
+  fallbackOpenFrom: (v) => `Open vanaf ${v}`,
+  days: {
+    monday: 'Maandag', tuesday: 'Dinsdag', wednesday: 'Woensdag', thursday: 'Donderdag',
+    friday: 'Vrijdag', saturday: 'Zaterdag', sunday: 'Zondag',
+  },
+};
+DICT.uz = {
+  title: 'Ish vaqti',
+  openNow: 'Hozir ochiq',
+  closedNow: 'Hozir yopiq',
+  opensAt: (v) => `${v} da ochiladi`,
+  closedAllDay: 'Yopiq',
+  fallbackOpenFrom: (v) => `${v} dan ochiq`,
+  days: {
+    monday: 'Dushanba', tuesday: 'Seshanba', wednesday: 'Chorshanba', thursday: 'Payshanba',
+    friday: 'Juma', saturday: 'Shanba', sunday: 'Yakshanba',
+  },
+};
+DICT.fr = {
+  title: "Heures d'ouverture",
+  openNow: 'Ouvert maintenant',
+  closedNow: 'Fermé maintenant',
+  opensAt: (v) => `Ouvre à ${v}`,
+  closedAllDay: 'Fermé',
+  fallbackOpenFrom: (v) => `Ouvert dès ${v}`,
+  days: {
+    monday: 'Lundi', tuesday: 'Mardi', wednesday: 'Mercredi', thursday: 'Jeudi',
+    friday: 'Vendredi', saturday: 'Samedi', sunday: 'Dimanche',
+  },
+};
+DICT.lv = {
+  title: 'Darba laiks',
+  openNow: 'Šobrīd atvērts',
+  closedNow: 'Šobrīd slēgts',
+  opensAt: (v) => `Atver ${v}`,
+  closedAllDay: 'Slēgts',
+  fallbackOpenFrom: (v) => `Atvērts no ${v}`,
+  days: {
+    monday: 'Pirmdiena', tuesday: 'Otrdiena', wednesday: 'Trešdiena', thursday: 'Ceturtdiena',
+    friday: 'Piektdiena', saturday: 'Sestdiena', sunday: 'Svētdiena',
+  },
+};
+
 const WEEK_ORDER = [
   'monday',
   'tuesday',
@@ -182,7 +244,7 @@ export default function OpeningHours({
   lang,
   variant = 'card',
 }: OpeningHoursProps) {
-  const t = DICT[lang] ?? DICT.az;
+  const t = DICT[lang] ?? DICT.en;
   const [open, setOpen] = useState(false);
   const wrapRef = useRef<HTMLDivElement>(null);
 

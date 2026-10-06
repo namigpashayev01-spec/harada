@@ -13,9 +13,21 @@ interface BlogCardProps {
   view: number;
   slug: ISlug;
   lang: string;
+  /** Heading level for the card title. Cards nested under a section heading
+   *  (e.g. "Similar blogs") must not emit another h2 — pass "h3" there. */
+  titleAs?: 'h2' | 'h3';
 }
 
-const BlogCard = ({ id, title, image, date, view, slug, lang }: BlogCardProps) => {
+const BlogCard = ({
+  id,
+  title,
+  image,
+  date,
+  view,
+  slug,
+  lang,
+  titleAs: Title = 'h2',
+}: BlogCardProps) => {
   const slugValue = slug[lang as keyof ISlug] || slug.en || slug.az || String(id);
   const href = `/${lang}/blog/${slugValue}`;
 
@@ -35,9 +47,9 @@ const BlogCard = ({ id, title, image, date, view, slug, lang }: BlogCardProps) =
 
       <div className="pt-[18px] px-[13px] pb-[8px]">
         <Link href={href}>
-          <h2 className="text-xl font-bold text-gray-900 leading-tight mb-8 hover:text-brand-ink transition-colors cursor-pointer">
+          <Title className="text-xl font-bold text-gray-900 leading-tight mb-8 hover:text-brand-ink transition-colors cursor-pointer line-clamp-3">
             {title}
-          </h2>
+          </Title>
         </Link>
 
         <div className="flex items-center justify-between text-sm text-black border-t border-t-[#ECECECEE] py-[18px]">

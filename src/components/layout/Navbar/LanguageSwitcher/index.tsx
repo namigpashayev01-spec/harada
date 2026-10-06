@@ -3,11 +3,20 @@
 import { useState, useRef, useEffect } from 'react';
 import { ChevronDown } from 'lucide-react';
 import { useLanguage } from '@/context/TranlateContext';
+import { usePathname } from 'next/navigation';
 import { languageOptions } from '@/data/languageOptions';
+import { langsForPath, stripLang } from '@/lib/locales';
 
 export default function LanguageSwitcher() {
   const { lang, changeLang } = useLanguage();
   const [isOpen, setIsOpen] = useState(false);
+  const pathname = usePathname() || '/';
+  // Each page offers only its own languages, local one first: a Belgrade page
+  // shows SRB / ENG / RU, a Baku page AZ / ENG / RU.
+  const pageLangs = langsForPath(stripLang(pathname));
+  const options = pageLangs
+    .map((code) => languageOptions.find((o) => o.code === code))
+    .filter((o): o is (typeof languageOptions)[number] => Boolean(o));
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const currentLanguage =
@@ -54,7 +63,7 @@ export default function LanguageSwitcher() {
 
       {isOpen && (
         <div className="absolute right-0 mt-1 w-full min-w-[120px] bg-white rounded-md shadow-lg py-1 z-10 border border-gray-200">
-          {languageOptions.map((option) => (
+          {options.map((option) => (
             <button
               key={option.code}
               onClick={() => {

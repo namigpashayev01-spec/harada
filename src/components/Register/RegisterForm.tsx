@@ -89,7 +89,7 @@ const DICT: Record<string, Dict> = {
 export default function RegisterForm() {
   const router = useRouter();
   const { lang } = useParams<{ lang: string }>();
-  const t = DICT[lang] ?? DICT.az;
+  const t = DICT[lang] ?? DICT.en;
   const { register, login } = useAuth();
   const [rememberMe, setRememberMe] = useState(true);
   const [name, setName] = useState('');

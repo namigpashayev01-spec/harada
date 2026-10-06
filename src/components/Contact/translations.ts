@@ -24,7 +24,7 @@ export type ContactDict = {
   };
 };
 
-const PHONE = '+994 77 323 12 07';
+const PHONE = '+994 77 315 15 80';
 const EMAIL = 'contact@looker.com';
 
 const dict: Record<'az' | 'en' | 'ru', ContactDict> = {

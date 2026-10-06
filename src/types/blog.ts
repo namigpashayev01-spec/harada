@@ -9,6 +9,8 @@ export interface BlogItem {
   image: string;
   view: number;
   date: string;
+  /** ISO 8601 publish date — used for <time datetime> and Article JSON-LD. */
+  date_iso?: string | null;
   slug: ISlug;
 }
 

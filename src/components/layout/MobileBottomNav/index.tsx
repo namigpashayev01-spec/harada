@@ -14,83 +14,34 @@ import {
   X,
   Check,
 } from 'lucide-react';
-import { useLanguage } from '@/context/TranlateContext';
+import { useLanguage, useT } from '@/context/TranlateContext';
 import { useAuth } from '@/context/AuthContext';
 import { languageOptions } from '@/data/languageOptions';
+import { homeLang, langsForPath, stripLang } from '@/lib/locales';
 import { cn } from '@/lib/utils';
 import { useState, useEffect } from 'react';
-
-type Dict = {
-  home: string;
-  places: string;
-  blog: string;
-  account: string;
-  login: string;
-  more: string;
-  pages: string;
-  about: string;
-  contact: string;
-  language: string;
-};
-
-const DICT: Record<string, Dict> = {
-  az: {
-    home: 'Əsas',
-    places: 'Məkanlar',
-    blog: 'Bloq',
-    account: 'Hesab',
-    login: 'Giriş',
-    more: 'Daha çox',
-    pages: 'Səhifələr',
-    about: 'Haqqımızda',
-    contact: 'Əlaqə',
-    language: 'Dil',
-  },
-  en: {
-    home: 'Home',
-    places: 'Places',
-    blog: 'Blog',
-    account: 'Account',
-    login: 'Login',
-    more: 'More',
-    pages: 'Pages',
-    about: 'About Us',
-    contact: 'Contact',
-    language: 'Language',
-  },
-  ru: {
-    home: 'Главная',
-    places: 'Места',
-    blog: 'Блог',
-    account: 'Аккаунт',
-    login: 'Вход',
-    more: 'Ещё',
-    pages: 'Страницы',
-    about: 'О нас',
-    contact: 'Контакты',
-    language: 'Язык',
-  },
-};
 
 export default function MobileBottomNav() {
   const { lang, changeLang } = useLanguage();
   const pathname = usePathname();
   const { isAuthenticated } = useAuth();
   const [moreOpen, setMoreOpen] = useState(false);
-  const t = DICT[lang] ?? DICT.az;
+  const t = useT();
 
   const navItems = [
-    { href: '/', label: t.home, icon: Home },
-    { href: '/places', label: t.places, icon: MapPin },
-    { href: '/blog', label: t.blog, icon: BookOpen },
+    { href: '/', label: t('nav.homeShort'), icon: Home },
+    { href: '/places', label: t('nav.places'), icon: MapPin },
+    { href: '/blog', label: t('nav.blog'), icon: BookOpen },
     {
       href: isAuthenticated ? '/dashboard/settings' : '/login',
-      label: isAuthenticated ? t.account : t.login,
+      label: isAuthenticated ? t('nav.account') : t('nav.loginShort'),
       icon: User,
     },
   ];
 
-  const getHref = (href: string) => `/${lang}${href === '/' ? '' : href}`;
+  // Home / Places / Blog are Azerbaijani-section pages: from a Serbian page they
+  // open in English (there is no /sr/places).
+  const getHref = (href: string) => `/${homeLang(lang)}${href === '/' ? '' : href}`;
 
   const isActive = (href: string) => {
     const fullHref = getHref(href);
@@ -158,7 +109,7 @@ export default function MobileBottomNav() {
           <button
             onClick={() => setMoreOpen(true)}
             className="flex flex-1 flex-col items-center justify-center gap-1 py-1"
-            aria-label={t.more}>
+            aria-label={t('nav.more')}>
             <span
               className={cn(
                 'flex h-8 w-14 items-center justify-center rounded-full transition-all duration-200',
@@ -179,7 +130,7 @@ export default function MobileBottomNav() {
                   ? 'font-semibold text-[#006653]'
                   : 'font-medium text-gray-500',
               )}>
-              {t.more}
+              {t('nav.more')}
             </span>
           </button>
         </div>
@@ -200,7 +151,7 @@ export default function MobileBottomNav() {
       <div
         role="dialog"
         aria-modal="true"
-        aria-label={t.more}
+        aria-label={t('nav.more')}
         className={cn(
           'md:hidden fixed left-0 right-0 bottom-0 z-[61] bg-white rounded-t-2xl shadow-2xl transition-transform duration-300 ease-out',
           moreOpen ? 'translate-y-0' : 'translate-y-full',
@@ -211,11 +162,11 @@ export default function MobileBottomNav() {
         </div>
 
         <div className="flex items-center justify-between px-5 pb-3 border-b border-gray-100">
-          <h3 className="text-base font-semibold text-gray-900">{t.more}</h3>
+          <h3 className="text-base font-semibold text-gray-900">{t('nav.more')}</h3>
           <button
             onClick={() => setMoreOpen(false)}
             className="p-1.5 rounded-full hover:bg-gray-100"
-            aria-label="Close">
+            aria-label={t('common.close')}>
             <X className="h-5 w-5 text-gray-600" />
           </button>
         </div>
@@ -223,7 +174,7 @@ export default function MobileBottomNav() {
         {/* Pages */}
         <div className="px-5 py-3">
           <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-2">
-            {t.pages}
+            {t('nav.pages')}
           </p>
           <div className="space-y-1">
             <Link
@@ -233,7 +184,7 @@ export default function MobileBottomNav() {
                 <Info className="h-5 w-5 text-[#006653]" />
               </span>
               <span className="text-sm font-medium text-gray-800">
-                {t.about}
+                {t('nav.about')}
               </span>
             </Link>
             <Link
@@ -243,7 +194,7 @@ export default function MobileBottomNav() {
                 <Phone className="h-5 w-5 text-[#006653]" />
               </span>
               <span className="text-sm font-medium text-gray-800">
-                {t.contact}
+                {t('nav.contact')}
               </span>
             </Link>
           </div>
@@ -252,10 +203,14 @@ export default function MobileBottomNav() {
         {/* Language */}
         <div className="px-5 py-3 border-t border-gray-100 pb-[max(env(safe-area-inset-bottom),1rem)]">
           <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
-            <Globe className="h-3.5 w-3.5" /> {t.language}
+            <Globe className="h-3.5 w-3.5" /> {t('nav.language')}
           </p>
           <div className="grid grid-cols-3 gap-2">
-            {languageOptions.map((option) => {
+            {/* Only the languages this page exists in (see LanguageSwitcher). */}
+            {langsForPath(stripLang(pathname || '/'))
+              .map((code) => languageOptions.find((o) => o.code === code))
+              .filter((o): o is (typeof languageOptions)[number] => Boolean(o))
+              .map((option) => {
               const active = option.code === lang;
               return (
                 <button

@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-export const VALID_LANGUAGES = ['en', 'az', 'ru'];
+// All route languages — mirrors ALL_LANGS in src/lib/locales.ts.
+export const VALID_LANGUAGES = ['en', 'az', 'ru', 'sr', 'nl', 'uz', 'fr', 'lv'];
 export type ValidLanguage = (typeof VALID_LANGUAGES)[number];
 const DEFAULT_LANGUAGE = 'az';
 

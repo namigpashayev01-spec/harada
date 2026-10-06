@@ -16,7 +16,7 @@ export interface FeedbackPayload {
   restoran_id: number;
   rate: number;
   recommed_friends: 0 | 1;
-  impression_id: number | null;
+  impression_ids: number[];
   galleries: File[];
   name: string;
   surname: string;
@@ -62,7 +62,7 @@ const feedbackService = {
     form.append('restoran_id', String(payload.restoran_id));
     form.append('rate', String(payload.rate));
     form.append('recommed_friends', String(payload.recommed_friends));
-    if (payload.impression_id !== null) form.append('impression_id', String(payload.impression_id));
+    payload.impression_ids.forEach((id) => form.append('impression_ids[]', String(id)));
     payload.galleries.forEach((file) => form.append('galleries[]', file));
     form.append('name', payload.name);
     form.append('surname', payload.surname);
