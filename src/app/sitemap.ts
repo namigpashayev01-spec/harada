@@ -30,6 +30,7 @@ const STATIC_PATHS = [
   '/places',
   '/about',
   '/contact',
+  '/privacy',
   '/blog',
   '/restaurant-register',
   // Taxonomy hubs — the pages that link on to every cuisine/category/district.

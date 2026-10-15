@@ -46,6 +46,8 @@ export const az = {
   'footer.download': 'Yüklə',
   'footer.copyright': 'Müəllif hüquqları © {year}. Bütün hüquqlar qorunur.',
   'footer.countries': 'Ölkələr',
+  'footer.privacy': 'Məxfilik siyasəti',
+  'privacy.updated': 'Son yenilənmə: {date}',
 
   /* ------------------------------------------------------------------ hero */
   'hero.badge': 'Bakının ən yaxşı masaları',
@@ -229,14 +231,29 @@ export const az = {
   'tax.index.cities.lead': 'Şəhər seçin: ünvan, iş saatları və telefon.',
   // Ölkə adı hər dildə fərqli hallanır (rusca "Рестораны Узбекистана"), ona görə
   // yer-tutucu yox, hər ölkə üçün ayrıca açar.
+  'hub.uz.badge': "Özbəkistanın ən yaxşı masaları",
+  'hub.uz.line1': "Özbəkistanda ən yaxşı restoranı",
+  'hub.uz.line2': "tap və rezerv et",
   'tax.index.cities.uz': 'Özbəkistan restoranları',
   'tax.index.cities.uz.lead': 'Şəhər seçin: Özbəkistan restoranlarının ünvanı, iş saatları və telefonu.',
+  'hub.ca.badge': "Kanadanın ən yaxşı masaları",
+  'hub.ca.line1': "Kanadada ən yaxşı restoranı",
+  'hub.ca.line2': "tap və rezerv et",
   'tax.index.cities.ca': 'Kanada restoranları',
   'tax.index.cities.ca.lead': 'Şəhər seçin: Kanada restoranlarının ünvanı, iş saatları və telefonu.',
+  'hub.nl.badge': "Niderlandın ən yaxşı masaları",
+  'hub.nl.line1': "Niderlandda ən yaxşı restoranı",
+  'hub.nl.line2': "tap və rezerv et",
   'tax.index.cities.nl': 'Niderland restoranları',
   'tax.index.cities.nl.lead': 'Şəhər seçin: Niderland restoranlarının ünvanı, iş saatları və telefonu.',
+  'hub.rs.badge': "Serbiyanın ən yaxşı masaları",
+  'hub.rs.line1': "Serbiyada ən yaxşı restoranı",
+  'hub.rs.line2': "tap və rezerv et",
   'tax.index.cities.rs': 'Serbiya restoranları',
   'tax.index.cities.rs.lead': 'Şəhər seçin: Serbiya restoranlarının ünvanı, iş saatları və telefonu.',
+  'hub.lv.badge': "Latviyanın ən yaxşı masaları",
+  'hub.lv.line1': "Latviyada ən yaxşı restoranı",
+  'hub.lv.line2': "tap və rezerv et",
   'tax.index.cities.lv': 'Latviya restoranları',
   'tax.index.cities.lv.lead': 'Şəhər seçin: Latviya restoranlarının ünvanı, iş saatları və telefonu.',
 

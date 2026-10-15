@@ -4,7 +4,6 @@ import MobileStickySearch from '@/components/layout/MobileStickySearch';
 import BlogList from '@/components/Home/BlogList';
 import Categories from '@/components/Home/Categories';
 import PopularPlaces from '@/components/Home/PopularPlaces';
-import RandomRestaurant from '@/components/Home/RandomRestaurant';
 import BestOffers from '@/components/Home/BestOffers';
 import blogService from '@/services/blog.service';
 import placeService from '@/services/place.service';
@@ -43,7 +42,6 @@ export default async function Home({ params }: HomeProps) {
       <Header lang={lang} />
       <Categories />
       <PopularPlaces lang={lang} initialData={popular} />
-      <RandomRestaurant lang={lang} />
       <BestOffers lang={lang} />
       <BlogList blogs={latestBlogs} />
     </>

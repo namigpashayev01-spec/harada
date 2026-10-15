@@ -224,10 +224,16 @@ const Footer = async ({ lang = 'az', footerLogo }: { lang?: string; footerLogo?:
             </nav>
           )}
 
-          <div className="mt-8 pt-4 border-t border-white/20">
-            <p className="text-white/70 flex items-center justify-center text-center text-[12px] font-poppins">
+          <div className="mt-8 pt-4 border-t border-white/20 flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-6 text-center">
+            <p className="text-white/70 text-[12px] font-poppins">
               {t('footer.copyright', { year: new Date().getFullYear() })}
             </p>
+            {/* The policy page exists in az/en/ru — foreign sections link to English. */}
+            <Link
+              href={`/${hl}/privacy`}
+              className="text-white/70 text-[12px] font-poppins underline-offset-4 hover:text-[#9fe870] hover:underline transition-colors">
+              {t('footer.privacy')}
+            </Link>
           </div>
         </div>
       </div>

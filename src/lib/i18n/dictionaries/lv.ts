@@ -41,6 +41,7 @@ export const lv: Record<TranslationKey, string> = {
   'footer.download': "Lejupielādēt",
   'footer.copyright': "Copyright © {year}. Visas tiesības aizsargātas.",
   'footer.countries': "Valstis",
+  'footer.privacy': "Privātuma politika",
   'card.topBadge': "Top 10 Baku",
   'card.offerBadge': "Piedāvājums",
   'card.reviewCount': "({n} atsauksmes)",
@@ -71,6 +72,9 @@ export const lv: Record<TranslationKey, string> = {
   'tax.index.cities.nl.lead': "Izvēlieties pilsētu: Nīderlandes restorānu adreses, darba laiks un tālruņi.",
   'tax.index.cities.rs': "Restorāni Serbijā",
   'tax.index.cities.rs.lead': "Izvēlieties pilsētu: Serbijas restorānu adreses, darba laiks un tālruņi.",
+  'hub.lv.badge': "Labākie galdiņi Latvijā",
+  'hub.lv.line1': "Atrodiet labāko restorānu",
+  'hub.lv.line2': "Latvijā un rezervējiet galdiņu",
   'tax.index.cities.lv': "Restorāni Latvijā",
   'tax.index.cities.lv.lead': "Izvēlieties pilsētu: Latvijas restorānu adreses, darba laiks un tālruņi.",
 };

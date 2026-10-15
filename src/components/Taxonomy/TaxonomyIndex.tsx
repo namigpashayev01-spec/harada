@@ -1,5 +1,7 @@
 import { homeLang } from '@/lib/locales';
 import Link from 'next/link';
+import Image from 'next/image';
+import BannerImg from '@/assets/images/banner.jpg';
 import { ChevronRight, Home } from 'lucide-react';
 import JsonLd from '@/components/JsonLd';
 import { getT } from '@/lib/i18n';
@@ -53,6 +55,10 @@ export default function TaxonomyIndex({ lang, type, terms }: TaxonomyIndexProps)
   // A country hub (/uzbekistan, /canada) sits directly under home: /places
   // lists only Azerbaijani restaurants, so it isn't this page's parent.
   const underPlaces = type !== 'city';
+  // Country hubs open with the same green hero as the home page, worded for
+  // that country (hub.<cc>.* keys); the home page itself stays about Baku.
+  const country = type === 'city' ? terms[0]?.country?.toLowerCase() : undefined;
+  const hero = country && CITY_HUB_KEYS[country.toUpperCase()] ? country : undefined;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -85,8 +91,46 @@ export default function TaxonomyIndex({ lang, type, terms }: TaxonomyIndexProps)
       </div>
 
       <div className="max-w-6xl mx-auto px-4 pt-8 pb-16">
-        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">{heading}</h1>
-        <p className="mt-2 text-gray-600 max-w-3xl">{lead}</p>
+        {hero ? (
+          <div
+            className="relative overflow-hidden rounded-[20px] px-6 py-10 sm:px-10 md:px-14 md:py-14"
+            style={{
+              background:
+                'linear-gradient(135deg, #013a30 0%, #006653 55%, #0a7d54 100%)',
+            }}>
+            <div className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-white/5" />
+            <div className="pointer-events-none absolute -bottom-28 left-1/3 h-72 w-72 rounded-full bg-black/10" />
+            <div className="relative z-10 grid items-center gap-10 lg:grid-cols-[1.1fr_0.9fr]">
+              <div className="text-white">
+                <span className="inline-flex items-center gap-2 rounded-full border border-white/30 bg-white/10 px-4 py-1.5 text-sm font-medium backdrop-blur-sm">
+                  🍽️ {t(`hub.${hero}.badge`)}
+                </span>
+                <h1 className="mt-5 text-3xl font-bold leading-[1.1] tracking-tight sm:text-4xl lg:text-[48px]">
+                  {t(`hub.${hero}.line1`)} <br className="hidden sm:block" />
+                  {t(`hub.${hero}.line2`)}
+                </h1>
+                <p className="mt-4 max-w-xl text-base text-white/85 md:text-lg">{lead}</p>
+              </div>
+              <div className="relative hidden lg:block">
+                <div className="relative ml-auto aspect-[4/3] w-full max-w-[420px] overflow-hidden rounded-2xl shadow-2xl rotate-2">
+                  <Image
+                    src={BannerImg}
+                    alt={heading}
+                    fill
+                    priority
+                    sizes="420px"
+                    className="object-cover"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <>
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">{heading}</h1>
+            <p className="mt-2 text-gray-600 max-w-3xl">{lead}</p>
+          </>
+        )}
 
         {terms.length === 0 ? (
           <p className="mt-10 text-gray-500">{t('tax.empty')}</p>
